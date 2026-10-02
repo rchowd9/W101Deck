@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.wizard101.deckbuilder.DeckBuilderController" 
+            prefHeight="600.0" prefWidth="800.0">
+    
+    <!-- Top Header -->
+    <top>
+        <HBox spacing="10" style="-fx-padding: 10; -fx-background-color: #2c3e50;">
+            <Label text="Wizard101 Deck Builder" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+        </HBox>
+    </top>
+
+    <!-- Left Sidebar: Controls & Stats -->
+    <left>
+        <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: #ecf0f1;" prefWidth="220">
+            <Label text="Deck Statistics" style="-fx-font-weight: bold;"/>
+            <Separator/>
+            <Label fx:id="cardCountLabel" text="Total Cards: 0 / 64"/>
+            <Label fx:id="avgPipLabel" text="Avg Pip Cost: 0.0"/>
+            <Separator/>
+            <Label text="Filter Spells:" style="-fx-font-weight: bold;"/>
+            <ComboBox fx:id="schoolFilter" promptText="Select School"/>
+            <Button text="Reset Deck" onAction="#handleResetDeck" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <!-- Center Panel: Active Deck Grid -->
+    <center>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Label text="Current Deck Composition" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <ScrollPane fitToWidth="true" fitToHeight="true">
+                <TilePane fx:id="deckTilePane" hgap="10" vgap="10" prefColumns="4"/>
+            </ScrollPane>
+        </VBox>
+    </center>
+
+</BorderPane>
