@@ -89,7 +89,7 @@ public class DeckBuilderController {
             Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips");
             Button removeButton = new Button("Remove");
             removeButton.setOnAction(event -> {
-                deck.removeCard(deck.getCards().get(index));
+                deck.removeCard(card);
                 refreshDeck();
                 updateDeckStats();
                 refreshCatalog();

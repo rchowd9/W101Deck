@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17243b">
+  <meta name="description" content="Build and plan a Wizard101 spell deck.">
+  <title>Wizard101 Deck Builder</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-mark" aria-hidden="true">W</div>
+    <div>
+      <p class="eyebrow">Deck planning workshop</p>
+      <h1>Wizard101 Deck Builder</h1>
+    </div>
+  </header>
+
+  <main class="app-layout">
+    <aside class="sidebar">
+      <section class="stats-card" aria-labelledby="stats-title">
+        <p class="eyebrow">Your strategy</p>
+        <h2 id="stats-title">Deck statistics</h2>
+        <p class="card-count" id="card-count" aria-live="polite">0 <span>/ 64 cards</span></p>
+        <div class="progress-track" role="progressbar" aria-label="Deck capacity" aria-valuemin="0" aria-valuemax="64" aria-valuenow="0">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p class="stat-row"><span>Average pip cost</span><strong id="average-pips">0.0</strong></p>
+      </section>
+
+      <section class="filter-card" aria-labelledby="filter-title">
+        <h2 id="filter-title">Filter spells</h2>
+        <label for="school-filter">School</label>
+        <select id="school-filter">
+          <option value="All Schools">All Schools</option>
+          <option value="Fire">Fire</option>
+          <option value="Ice">Ice</option>
+          <option value="Storm">Storm</option>
+          <option value="Myth">Myth</option>
+          <option value="Life">Life</option>
+          <option value="Death">Death</option>
+          <option value="Balance">Balance</option>
+        </select>
+        <button class="button button-secondary" id="reset-deck" type="button">Reset deck</button>
+      </section>
+      <p class="sidebar-note">Choose spells from the catalog to start building your next deck.</p>
+    </aside>
+
+    <section class="catalog-section" aria-labelledby="catalog-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Find your next move</p>
+          <h2 id="catalog-title">Spell catalog</h2>
+        </div>
+        <span class="result-count" id="result-count"></span>
+      </div>
+      <div class="spell-grid" id="spell-catalog"></div>
+    </section>
+
+    <section class="deck-section" aria-labelledby="deck-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Your selected spells</p>
+          <h2 id="deck-title">Current deck</h2>
+        </div>
+      </div>
+      <div class="deck-list" id="deck-list" aria-live="polite"></div>
+      <p class="empty-state" id="empty-state">Your deck is empty. Add a spell from the catalog.</p>
+    </section>
+  </main>
+</body>
+</html>
