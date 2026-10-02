@@ -1,4 +1,5 @@
 const MAX_DECK_SIZE = 64;
+const SAVED_DECK_KEY = "wizard101-deck-builder";
 
 const spells = [
   { id: "fire-cat", name: "Fire Cat", school: "Fire", pipCost: 1, description: "80–120 Fire Damage" },
@@ -20,6 +21,54 @@ const averagePips = document.querySelector("#average-pips");
 const progress = document.querySelector(".progress-track");
 const progressFill = document.querySelector("#progress-fill");
 const resultCount = document.querySelector("#result-count");
+
+function restoreDeck() {
+  let savedDeck;
+  try {
+    savedDeck = localStorage.getItem(SAVED_DECK_KEY);
+  } catch (error) {
+    console.error("Could not read the saved deck from this browser.", error);
+    return;
+  }
+
+  if (!savedDeck) {
+    return;
+  }
+
+  let spellIds;
+  try {
+    spellIds = JSON.parse(savedDeck);
+  } catch (error) {
+    console.error("The saved deck data is not valid JSON.", error);
+    return;
+  }
+
+  if (!Array.isArray(spellIds)) {
+    console.error("The saved deck data is not a list of spell IDs.");
+    return;
+  }
+
+  for (const id of spellIds) {
+    const spell = spells.find((candidate) => candidate.id === id);
+    if (!spell) {
+      console.warn(`Skipping unknown saved spell ID: ${id}`);
+      continue;
+    }
+    if (deck.length === MAX_DECK_SIZE) {
+      console.warn("The saved deck exceeds the 64-card limit; extra cards were skipped.");
+      break;
+    }
+    deck.push(spell);
+  }
+}
+
+function saveDeck() {
+  try {
+    localStorage.setItem(SAVED_DECK_KEY, JSON.stringify(deck.map((spell) => spell.id)));
+  } catch (error) {
+    console.error("Could not save the deck in this browser.", error);
+  }
+}
 
 function renderCatalog() {
   const selectedSchool = schoolFilter.value;
@@ -118,6 +167,7 @@ function render() {
   renderCatalog();
   renderDeck();
   renderStats();
+  saveDeck();
 }
 
 schoolFilter.addEventListener("change", renderCatalog);
@@ -151,6 +201,7 @@ document.querySelector("#export-deck").addEventListener("click", () => {
   window.setTimeout(() => URL.revokeObjectURL(download.href), 1000);
 });
 
+restoreDeck();
 render();
 
 if ("serviceWorker" in navigator && window.location.protocol !== "file:") {

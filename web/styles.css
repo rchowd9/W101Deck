@@ -361,6 +361,12 @@ select:focus {
   min-height: auto;
 }
 
+.deck-note {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
 .deck-list {
   display: grid;
   gap: 9px;

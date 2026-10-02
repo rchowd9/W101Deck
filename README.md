@@ -3,8 +3,8 @@
 This repository contains a JavaFX desktop app and a separate static web edition.
 Both let you filter the sample spell catalog, add and remove cards, track deck
 size up to 64 cards, and reset the deck. The web edition also provides spell
-search, text export, an attributed Myth-school field guide, and an offline-ready
-installable shell.
+search, browser-local deck saving, text export, an attributed Myth-school field
+guide, and an offline-ready installable shell.
 
 ## Run the JavaFX desktop app
 
