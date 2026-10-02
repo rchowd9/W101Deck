@@ -48,4 +48,5 @@ directory.
 The [school field guide](web/schools.html) paraphrases the Myth-school
 description available from the [official Wizard101 website](https://www.wizard101.com/).
 The guide labels its deck-planning suggestions as fan-made advice; verify current
-spell details in-game.
+spell details in-game. See [web/SOURCES.md](web/SOURCES.md) for attribution and
+catalog limitations.

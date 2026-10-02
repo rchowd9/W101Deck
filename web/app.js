@@ -148,7 +148,7 @@ document.querySelector("#export-deck").addEventListener("click", () => {
   download.href = URL.createObjectURL(new Blob([summary], { type: "text/plain;charset=utf-8" }));
   download.download = "wizard101-deck.txt";
   download.click();
-  URL.revokeObjectURL(download.href);
+  window.setTimeout(() => URL.revokeObjectURL(download.href), 1000);
 });
 
 render();
