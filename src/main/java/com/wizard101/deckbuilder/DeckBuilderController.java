@@ -1,14 +1,14 @@
 package com.wizard101.deckbuilder;
 
+import com.wizard101.deckbuilder.model.Card;
+import com.wizard101.deckbuilder.model.Deck;
+import com.wizard101.deckbuilder.service.CardDatabase;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.TilePane;
-import com.wizard101.deckbuilder.model.Card;
-import com.wizard101.deckbuilder.model.Deck;
-import com.wizard101.deckbuilder.service.CardDatabase;
+import javafx.scene.layout.VBox;
 
 public class DeckBuilderController {
 

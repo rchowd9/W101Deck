@@ -26,7 +26,8 @@ Vercel hosts the browser edition; it cannot run the JavaFX desktop GUI.
 
 1. Import this repository in Vercel.
 2. Set the project's **Root Directory** to `web`.
-3. Leave the framework preset as **Other** and the build command empty.
+3. Leave the framework preset as **Other**, the build command empty, and set
+   the output directory to `.`.
 4. Deploy. The `web` folder contains the static site entry point and assets.
 
 Alternatively, install the Vercel CLI and run `vercel --prod` from the `web`
