@@ -3,6 +3,64 @@
     -fx-background-color: #f4f6f7;
 }
 
+.header {
+    -fx-padding: 14;
+    -fx-background-color: #2c3e50;
+}
+
+.header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.sidebar {
+    -fx-padding: 14;
+    -fx-background-color: #ecf0f1;
+}
+
+.content-panel, .deck-panel {
+    -fx-padding: 16;
+}
+
+.deck-panel {
+    -fx-background-color: #ecf0f1;
+}
+
+.section-title, .spell-name {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.spell-name {
+    -fx-font-size: 14px;
+}
+
+.spell-card, .deck-card {
+    -fx-padding: 12;
+    -fx-background-color: white;
+    -fx-background-radius: 6px;
+    -fx-border-color: #dce3e7;
+    -fx-border-radius: 6px;
+}
+
+.spell-card {
+    -fx-pref-width: 220px;
+}
+
+.deck-card {
+    -fx-pref-width: 270px;
+}
+
+.card-grid {
+    -fx-padding: 4;
+}
+
+.list-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
 .button {
     -fx-background-color: #3498db;
     -fx-text-fill: white;
