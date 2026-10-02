@@ -30,6 +30,23 @@ body {
   background: var(--navy);
 }
 
+.header-links {
+  margin-left: auto;
+}
+
+.header-links a,
+.site-footer a {
+  color: #d9e4fb;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.header-links a:hover,
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
 .brand-mark {
   display: grid;
   width: 44px;
@@ -149,6 +166,10 @@ p {
   margin-top: 16px;
 }
 
+.filter-card .button-secondary + .button-secondary {
+  margin-top: 8px;
+}
+
 .filter-card label {
   display: block;
   margin: 18px 0 7px;
@@ -230,6 +251,32 @@ select {
 .result-count {
   color: var(--muted);
   font-size: 12px;
+}
+
+.search-label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.search-input {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--navy);
+  background: white;
+  font: inherit;
+  font-size: 13px;
+}
+
+.search-input:focus,
+select:focus {
+  border-color: #829bd1;
+  outline: 3px solid rgb(66 105 189 / 14%);
 }
 
 .spell-grid {
@@ -367,6 +414,22 @@ select {
   display: none;
 }
 
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 16px 28px 24px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.site-footer a {
+  color: #536b9d;
+  white-space: nowrap;
+}
+
 @media (max-width: 1050px) {
   .app-layout {
     grid-template-columns: 220px minmax(0, 1fr);
@@ -384,6 +447,10 @@ select {
 
   .site-header h1 {
     font-size: 18px;
+  }
+
+  .header-links a {
+    font-size: 11px;
   }
 
   .app-layout {
@@ -419,5 +486,10 @@ select {
 
   .spell-grid {
     grid-template-columns: 1fr;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    padding: 12px 20px 22px;
   }
 }

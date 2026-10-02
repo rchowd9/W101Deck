@@ -10,9 +10,11 @@ const spells = [
 
 const deck = [];
 const schoolFilter = document.querySelector("#school-filter");
+const spellSearch = document.querySelector("#spell-search");
 const catalog = document.querySelector("#spell-catalog");
 const deckList = document.querySelector("#deck-list");
 const emptyState = document.querySelector("#empty-state");
+const noResults = document.querySelector("#no-results");
 const cardCount = document.querySelector("#card-count");
 const averagePips = document.querySelector("#average-pips");
 const progress = document.querySelector(".progress-track");
@@ -21,11 +23,14 @@ const resultCount = document.querySelector("#result-count");
 
 function renderCatalog() {
   const selectedSchool = schoolFilter.value;
+  const searchTerm = spellSearch.value.trim().toLowerCase();
   const availableSpells = spells.filter((spell) =>
-    selectedSchool === "All Schools" || spell.school === selectedSchool
+    (selectedSchool === "All Schools" || spell.school === selectedSchool) &&
+    `${spell.name} ${spell.school} ${spell.description}`.toLowerCase().includes(searchTerm)
   );
 
   catalog.replaceChildren();
+  noResults.hidden = availableSpells.length > 0;
   resultCount.textContent = `${availableSpells.length} ${availableSpells.length === 1 ? "spell" : "spells"}`;
 
   for (const spell of availableSpells) {
@@ -116,9 +121,41 @@ function render() {
 }
 
 schoolFilter.addEventListener("change", renderCatalog);
+spellSearch.addEventListener("input", renderCatalog);
+const requestedSchool = new URLSearchParams(window.location.search).get("school");
+if ([...schoolFilter.options].some((option) => option.value === requestedSchool)) {
+  schoolFilter.value = requestedSchool;
+}
 document.querySelector("#reset-deck").addEventListener("click", () => {
   deck.length = 0;
   render();
 });
+document.querySelector("#export-deck").addEventListener("click", () => {
+  const cards = deck.map((spell) =>
+    `- ${spell.name} (${spell.school}, ${spell.pipCost} ${spell.pipCost === 1 ? "pip" : "pips"})`
+  );
+  const totalPips = deck.reduce((total, spell) => total + spell.pipCost, 0);
+  const summary = [
+    "Wizard101 Deck Builder — Deck Export",
+    `Cards: ${deck.length}/${MAX_DECK_SIZE}`,
+    `Average pip cost: ${deck.length === 0 ? "0.0" : (totalPips / deck.length).toFixed(1)}`,
+    "",
+    ...(cards.length > 0 ? cards : ["(No cards in this deck yet.)"]),
+    "",
+    "Unofficial fan-made planner. Not affiliated with KingsIsle Entertainment."
+  ].join("\n");
+  const download = document.createElement("a");
+  download.href = URL.createObjectURL(new Blob([summary], { type: "text/plain;charset=utf-8" }));
+  download.download = "wizard101-deck.txt";
+  download.click();
+  URL.revokeObjectURL(download.href);
+});
 
 render();
+
+if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js")
+      .catch((error) => console.error("Could not register the offline app cache.", error));
+  });
+}

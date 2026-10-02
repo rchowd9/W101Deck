@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#17243b">
   <meta name="description" content="Build and plan a Wizard101 spell deck.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Wizard101 Deck Builder</title>
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
@@ -16,6 +18,9 @@
       <p class="eyebrow">Deck planning workshop</p>
       <h1>Wizard101 Deck Builder</h1>
     </div>
+    <nav class="header-links" aria-label="Main navigation">
+      <a href="schools.html">School guide</a>
+    </nav>
   </header>
 
   <main class="app-layout">
@@ -44,6 +49,7 @@
           <option value="Balance">Balance</option>
         </select>
         <button class="button button-secondary" id="reset-deck" type="button">Reset deck</button>
+        <button class="button button-secondary" id="export-deck" type="button">Export deck</button>
       </section>
       <p class="sidebar-note">Choose spells from the catalog to start building your next deck.</p>
     </aside>
@@ -56,7 +62,10 @@
         </div>
         <span class="result-count" id="result-count"></span>
       </div>
+      <label class="search-label" for="spell-search">Search spells</label>
+      <input id="spell-search" class="search-input" type="search" placeholder="Try a spell name or effect" autocomplete="off">
       <div class="spell-grid" id="spell-catalog"></div>
+      <p class="empty-state" id="no-results" hidden>No spells match that search and school. Try another filter.</p>
     </section>
 
     <section class="deck-section" aria-labelledby="deck-title">
@@ -70,5 +79,9 @@
       <p class="empty-state" id="empty-state">Your deck is empty. Add a spell from the catalog.</p>
     </section>
   </main>
+  <footer class="site-footer">
+    <span>Unofficial fan-made deck planner. Not affiliated with KingsIsle Entertainment.</span>
+    <a href="https://www.wizard101.com/" target="_blank" rel="noreferrer">Visit Wizard101</a>
+  </footer>
 </body>
 </html>

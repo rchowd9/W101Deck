@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17243b">
+  <meta name="description" content="A sourced Wizard101 Myth school primer and deck-planning tips.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="schools.css">
+  <title>Myth School Guide | Wizard101 Deck Builder</title>
+  <script>
+    if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .catch((error) => console.error("Could not register the offline app cache.", error));
+      });
+    }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand-mark" href="index.html" aria-label="Back to deck builder">W</a>
+    <div>
+      <p class="eyebrow">Deck planning workshop</p>
+      <h1>School field guide</h1>
+    </div>
+    <nav class="header-links" aria-label="Main navigation">
+      <a href="index.html">Back to deck builder</a>
+    </nav>
+  </header>
+
+  <main class="guide-layout">
+    <section class="guide-hero">
+      <p class="eyebrow">Official-site spotlight</p>
+      <span class="school-tag school-myth">Myth · Conjurers</span>
+      <h2>Make imagination your strategy.</h2>
+      <p class="guide-intro">
+        Wizard101’s Myth school description frames Myth around imagination and
+        the power to bring ideas to life. It describes Conjurers calling legendary
+        creatures by their True Names and building a toolkit around minions.
+      </p>
+      <a class="button button-primary guide-cta" href="index.html?school=Myth">Browse Myth spells</a>
+    </section>
+
+    <section class="guide-content" aria-labelledby="myth-toolkit-title">
+      <div class="guide-heading">
+        <p class="eyebrow">Turn the school identity into a deck plan</p>
+        <h2 id="myth-toolkit-title">A Conjurer’s toolkit</h2>
+      </div>
+      <div class="guide-cards">
+        <article class="guide-card">
+          <span class="guide-number">01</span>
+          <h3>Make room for minions</h3>
+          <p>The official description highlights four minion types with different functions. Keep your deck flexible enough to support the summon that fits the fight.</p>
+        </article>
+        <article class="guide-card">
+          <span class="guide-number">02</span>
+          <h3>Support your summon</h3>
+          <p>Myth’s described toolkit includes spells that buff, heal, and protect minions. Think about support cards alongside direct attacks when planning a setup.</p>
+        </article>
+        <article class="guide-card">
+          <span class="guide-number">03</span>
+          <h3>Pack an answer to defenses</h3>
+          <p>The school description also calls out Myth’s ability to remove an opponent’s defenses. Consider keeping a utility option ready for shield-heavy encounters.</p>
+        </article>
+      </div>
+      <aside class="source-note">
+        <strong>Source and attribution</strong>
+        <p>Paraphrased from the <a href="https://www.wizard101.com/" target="_blank" rel="noreferrer">official Wizard101 website</a>, Myth school description (accessed October 2, 2026). The linked site may route to different pages by region.</p>
+        <p>Deck suggestions above are fan-made planning ideas, not official game advice. Spell availability and effects may change in-game.</p>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Unofficial fan-made deck planner. Not affiliated with KingsIsle Entertainment.</span>
+    <a href="index.html">Return to the deck builder</a>
+  </footer>
+</body>
+</html>
