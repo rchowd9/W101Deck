@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.wizard101.deckbuilder.PetPlannerController" styleClass="planner-page">
+    <top>
+        <VBox spacing="5" styleClass="planner-heading">
+            <Label text="Pet Hatching &amp; Talent Calculator" styleClass="page-title"/>
+            <Label text="Compare parent talent pools, inspect a lineage tree, and estimate potential offspring manifestations."
+                   styleClass="muted-text"/>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.46">
+            <items>
+                <VBox spacing="12" styleClass="planner-card">
+                    <Label text="Parent talent pools" styleClass="section-title"/>
+                    <GridPane hgap="10" vgap="8">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="50"/>
+                            <ColumnConstraints percentWidth="50"/>
+                        </columnConstraints>
+                        <Label text="Parent A name" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <Label text="Parent B name" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <TextField fx:id="parentAName" promptText="Parent A" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <TextField fx:id="parentBName" promptText="Parent B" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Talent, percentage" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <Label text="Talent, percentage" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                        <TextArea fx:id="parentAPool" prefRowCount="7" wrapText="false" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                        <TextArea fx:id="parentBPool" prefRowCount="7" wrapText="false" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                    </GridPane>
+                    <HBox spacing="8">
+                        <TextField fx:id="offspringName" promptText="Offspring name" HBox.hgrow="ALWAYS"/>
+                        <Button text="Calculate" onAction="#handleCalculate"/>
+                    </HBox>
+                    <Label fx:id="modelNote" wrapText="true" styleClass="muted-text"/>
+                </VBox>
+                <VBox spacing="12" styleClass="planner-card">
+                    <Label text="Bloodline &amp; potential" styleClass="section-title"/>
+                    <TreeView fx:id="bloodlineTree" VBox.vgrow="ALWAYS"/>
+                    <Label text="Estimated manifestation chance" styleClass="section-title"/>
+                    <TableView fx:id="talentTable" prefHeight="190" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="talentColumn" text="Talent" prefWidth="230"/>
+                            <TableColumn fx:id="chanceColumn" text="Combined chance" prefWidth="160"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
