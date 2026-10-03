@@ -14,6 +14,12 @@ Install JDK 17 or newer and Maven, then run this from the repository root:
 mvn clean javafx:run
 ```
 
+On Windows, you can instead double-click `run-desktop.cmd` or run:
+
+```powershell
+.\run-desktop.cmd
+```
+
 Maven downloads the JavaFX dependencies on the first run. A desktop environment
 is required; the JavaFX app is not a server application.
 
@@ -34,14 +40,25 @@ only enable the offline app cache on localhost or HTTPS.
 
 Vercel hosts the browser edition; it cannot run the JavaFX desktop GUI.
 
-1. Import this repository in Vercel.
-2. Set the project's **Root Directory** to `web`.
-3. Leave the framework preset as **Other**, the build command empty, and set
-   the output directory to `.`.
-4. Deploy. The `web` folder contains the static site entry point and assets.
+1. Push the project to GitHub and import that repository in Vercel.
+2. Keep the project **Root Directory** at the repository root.
+3. Choose the **Other** framework preset and leave the build command empty.
+   The root `vercel.json` sets `web` as the static output directory.
+4. Deploy. Vercel will publish the browser edition from `web`; it does not run
+   the JavaFX desktop GUI.
 
-Alternatively, install the Vercel CLI and run `vercel --prod` from the `web`
-directory.
+Alternatively, install Node.js, then install and run the Vercel CLI from the
+repository root:
+
+```powershell
+npm install --global vercel
+vercel
+vercel --prod
+```
+
+The first `vercel` command links the project and creates a preview deployment;
+`vercel --prod` publishes to production. The account must be logged in with
+`vercel login`.
 
 ## Wizard101 reference
 
