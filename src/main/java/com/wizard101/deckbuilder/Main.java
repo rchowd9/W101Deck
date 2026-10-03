@@ -8,13 +8,15 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("DeckBuilderView.fxml"));
-        Scene scene = new Scene(loader.load(), 900, 650);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("AppView.fxml"));
+        Scene scene = new Scene(loader.load(), 1180, 780);
         
         // Load external CSS
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
 
         primaryStage.setTitle("Wizard101 Deck Builder & Planner");
+        primaryStage.setMinWidth(980);
+        primaryStage.setMinHeight(680);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
