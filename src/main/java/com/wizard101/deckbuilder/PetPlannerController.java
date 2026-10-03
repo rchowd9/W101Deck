@@ -104,7 +104,9 @@ public class PetPlannerController {
                 + " — potential manifestations");
         chances.forEach((talent, chance) -> offspring.getChildren().add(
                 new TreeItem<>(String.format("%s (%.1f%% model chance)", talent, chance))));
-        root.getChildren().addAll(firstParent, secondParent, offspring);
+        root.getChildren().add(firstParent);
+        root.getChildren().add(secondParent);
+        root.getChildren().add(offspring);
         root.setExpanded(true);
         firstParent.setExpanded(true);
         secondParent.setExpanded(true);
