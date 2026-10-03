@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.wizard101.deckbuilder.CraftingController" styleClass="planner-page">
+    <top>
+        <VBox spacing="5" styleClass="planner-heading">
+            <Label text="Crafting &amp; Reagents Tracker" styleClass="page-title"/>
+            <Label text="Create gear goals for each wizard, record where materials come from, and keep inventory gaps visible."
+                   styleClass="muted-text"/>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="14" styleClass="planner-card">
+            <HBox spacing="10">
+                <ComboBox fx:id="projectSelector" promptText="Select a gear goal" prefWidth="360" HBox.hgrow="ALWAYS"/>
+                <Button text="New gear goal" onAction="#handleAddProject"/>
+                <Button text="Add material" onAction="#handleAddMaterial"/>
+            </HBox>
+            <Label fx:id="projectSummary" text="Create a goal, then add the recipe or materials you still need."
+                   styleClass="section-title"/>
+            <ProgressBar fx:id="materialProgress" progress="0" maxWidth="Infinity"/>
+            <Label fx:id="missingAlert" text="No crafting goal selected." styleClass="alert-text"/>
+            <TableView fx:id="materialTable" editable="true" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="materialColumn" text="Material / reagent" prefWidth="240"/>
+                    <TableColumn fx:id="sourceColumn" text="Source / location" prefWidth="300"/>
+                    <TableColumn fx:id="requiredColumn" text="Required" prefWidth="100"/>
+                    <TableColumn fx:id="ownedColumn" text="Owned (edit)" prefWidth="125"/>
+                    <TableColumn fx:id="missingColumn" text="Still needed" prefWidth="120"/>
+                </columns>
+                <placeholder>
+                    <Label text="Choose a goal and add the recipe items you want to track."/>
+                </placeholder>
+            </TableView>
+            <Label text="Recipes are intentionally user-entered; verify current in-game crafting requirements before farming."
+                   wrapText="true" styleClass="muted-text"/>
+        </VBox>
+    </center>
+</BorderPane>
