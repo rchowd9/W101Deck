@@ -1,7 +1,7 @@
 package com.wizard101.deckbuilder.service;
 
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 public final class PetTalentCalculator {
     private PetTalentCalculator() {
@@ -18,13 +18,17 @@ public final class PetTalentCalculator {
     }
 
     public static Map<String, Double> calculate(Map<String, Double> parentA, Map<String, Double> parentB) {
-        java.util.TreeMap<String, Double> results = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        TreeMap<String, Boolean> talents = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        parentA.keySet().forEach(talent -> talents.put(talent, true));
-        parentB.keySet().forEach(talent -> talents.put(talent, true));
-        for (String talent : talents.keySet()) {
+        Map<String, Double> normalizedA = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, Double> normalizedB = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        normalizedA.putAll(parentA);
+        normalizedB.putAll(parentB);
+        TreeSet<String> talents = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        talents.addAll(normalizedA.keySet());
+        talents.addAll(normalizedB.keySet());
+        Map<String, Double> results = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (String talent : talents) {
             results.put(talent, offspringManifestationChance(
-                    parentA.getOrDefault(talent, 0.0), parentB.getOrDefault(talent, 0.0)));
+                    normalizedA.getOrDefault(talent, 0.0), normalizedB.getOrDefault(talent, 0.0)));
         }
         return results;
     }

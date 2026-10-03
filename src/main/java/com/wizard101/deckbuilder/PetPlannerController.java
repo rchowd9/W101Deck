@@ -12,8 +12,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class PetPlannerController {
     @FXML private TextField parentAName;
@@ -58,7 +58,7 @@ public class PetPlannerController {
     }
 
     private Map<String, Double> parsePool(String text) {
-        Map<String, Double> pool = new LinkedHashMap<>();
+        Map<String, Double> pool = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         int lineNumber = 0;
         for (String line : text.split("\\R")) {
             lineNumber++;
@@ -77,7 +77,7 @@ public class PetPlannerController {
             } catch (NumberFormatException exception) {
                 throw new IllegalArgumentException("Line " + lineNumber + " has an invalid percentage.");
             }
-            if (pool.keySet().stream().anyMatch(existing -> existing.equalsIgnoreCase(talent))) {
+            if (pool.containsKey(talent)) {
                 throw new IllegalArgumentException("Talent names must be unique within each parent's pool: " + talent);
             }
             if (percentage < 0 || percentage > 100 || !Double.isFinite(percentage)) {
