@@ -77,3 +77,71 @@
 .label {
     -fx-text-fill: #2c3e50;
 }
+
+.app-tabs {
+    -fx-background-color: #f4f6f7;
+}
+
+.app-tabs > .tab-header-area > .tab-header-background {
+    -fx-background-color: #2c3e50;
+}
+
+.app-tabs .tab {
+    -fx-background-color: #34495e;
+}
+
+.app-tabs .tab:selected {
+    -fx-background-color: #3498db;
+}
+
+.app-tabs .tab .tab-label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.planner-page {
+    -fx-background-color: #f4f6f7;
+}
+
+.planner-heading {
+    -fx-padding: 22 24 16 24;
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #dce3e7 transparent;
+}
+
+.page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.muted-text {
+    -fx-text-fill: #667985;
+}
+
+.planner-card {
+    -fx-padding: 18;
+    -fx-background-color: #f4f6f7;
+}
+
+.planner-page .split-pane {
+    -fx-background-color: #f4f6f7;
+    -fx-padding: 8;
+}
+
+.planner-page .split-pane-divider {
+    -fx-background-color: #dce3e7;
+}
+
+.planner-page .table-view,
+.planner-page .tree-view,
+.planner-page .text-area,
+.planner-page .text-field,
+.planner-page .combo-box {
+    -fx-background-radius: 5;
+}
+
+.alert-text {
+    -fx-text-fill: #a94442;
+    -fx-font-weight: bold;
+}
