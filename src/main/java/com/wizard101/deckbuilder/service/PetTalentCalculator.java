@@ -1,7 +1,7 @@
 package com.wizard101.deckbuilder.service;
 
 import java.util.Map;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 public final class PetTalentCalculator {
     private PetTalentCalculator() {
@@ -18,11 +18,11 @@ public final class PetTalentCalculator {
     }
 
     public static Map<String, Double> calculate(Map<String, Double> parentA, Map<String, Double> parentB) {
-        TreeSet<String> talents = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        talents.addAll(parentA.keySet());
-        talents.addAll(parentB.keySet());
         java.util.TreeMap<String, Double> results = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (String talent : talents) {
+        TreeMap<String, Boolean> talents = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        parentA.keySet().forEach(talent -> talents.put(talent, true));
+        parentB.keySet().forEach(talent -> talents.put(talent, true));
+        for (String talent : talents.keySet()) {
             results.put(talent, offspringManifestationChance(
                     parentA.getOrDefault(talent, 0.0), parentB.getOrDefault(talent, 0.0)));
         }

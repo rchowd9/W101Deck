@@ -19,6 +19,11 @@
     -fx-background-color: #ecf0f1;
 }
 
+.sidebar-scroll {
+    -fx-background-color: #ecf0f1;
+    -fx-background: #ecf0f1;
+}
+
 .content-panel, .deck-panel {
     -fx-padding: 16;
 }

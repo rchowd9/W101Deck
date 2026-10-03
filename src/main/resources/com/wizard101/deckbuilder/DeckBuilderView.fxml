@@ -16,23 +16,27 @@
 
     <!-- Left Sidebar: Controls & Stats -->
     <left>
-        <VBox spacing="10" styleClass="sidebar" prefWidth="220">
-            <Label text="Deck Statistics" styleClass="section-title"/>
-            <Separator/>
-            <Label fx:id="cardCountLabel" text="Total Cards: 0 / 64"/>
-            <Label fx:id="avgPipLabel" text="Avg Pip Cost: 0.0"/>
-            <Separator/>
-            <Label text="Filter Spells" styleClass="section-title"/>
-            <ComboBox fx:id="schoolFilter" onAction="#handleSchoolFilter" maxWidth="Infinity"/>
-            <Button text="Reset Deck" onAction="#handleResetDeck" maxWidth="Infinity"/>
-            <Separator/>
-            <Label text="Saved deck builds" styleClass="section-title"/>
-            <TextField fx:id="deckNameField" promptText="Build name"/>
-            <Button text="Save current deck" onAction="#handleSaveDeck" maxWidth="Infinity"/>
-            <ComboBox fx:id="savedDeckSelector" promptText="Choose saved build" maxWidth="Infinity"/>
-            <Button text="Load selected build" onAction="#handleLoadDeck" maxWidth="Infinity"/>
-            <Button text="Export current deck..." onAction="#handleExportDeck" maxWidth="Infinity"/>
-        </VBox>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="sidebar-scroll" prefWidth="240">
+            <content>
+                <VBox spacing="10" styleClass="sidebar">
+                    <Label text="Deck Statistics" styleClass="section-title"/>
+                    <Separator/>
+                    <Label fx:id="cardCountLabel" text="Total Cards: 0 / 64"/>
+                    <Label fx:id="avgPipLabel" text="Avg Pip Cost: 0.0"/>
+                    <Separator/>
+                    <Label text="Filter Spells" styleClass="section-title"/>
+                    <ComboBox fx:id="schoolFilter" onAction="#handleSchoolFilter" maxWidth="Infinity"/>
+                    <Button text="Reset Deck" onAction="#handleResetDeck" maxWidth="Infinity"/>
+                    <Separator/>
+                    <Label text="Saved deck builds" styleClass="section-title"/>
+                    <TextField fx:id="deckNameField" promptText="Build name"/>
+                    <Button text="Save current deck" onAction="#handleSaveDeck" maxWidth="Infinity"/>
+                    <ComboBox fx:id="savedDeckSelector" promptText="Choose saved build" maxWidth="Infinity"/>
+                    <Button text="Load selected build" onAction="#handleLoadDeck" maxWidth="Infinity"/>
+                    <Button text="Export current deck..." onAction="#handleExportDeck" maxWidth="Infinity"/>
+                </VBox>
+            </content>
+        </ScrollPane>
     </left>
 
     <!-- Center Panel: Spell catalog -->
