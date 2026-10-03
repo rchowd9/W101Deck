@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<TabPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+         tabClosingPolicy="UNAVAILABLE" styleClass="app-tabs">
+    <tabs>
+        <Tab text="Deck Builder">
+            <content>
+                <fx:include source="DeckBuilderView.fxml"/>
+            </content>
+        </Tab>
+        <Tab text="Pet Planner">
+            <content>
+                <fx:include source="PetPlannerView.fxml"/>
+            </content>
+        </Tab>
+        <Tab text="Crafting Tracker">
+            <content>
+                <fx:include source="CraftingView.fxml"/>
+            </content>
+        </Tab>
+        <Tab text="World Progress">
+            <content>
+                <fx:include source="ProgressionView.fxml"/>
+            </content>
+        </Tab>
+    </tabs>
+</TabPane>

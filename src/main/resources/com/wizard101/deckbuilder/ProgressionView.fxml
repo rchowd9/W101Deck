@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.wizard101.deckbuilder.ProgressionController" styleClass="planner-page">
+    <top>
+        <VBox spacing="5" styleClass="planner-heading">
+            <Label text="Quest &amp; World Progression" styleClass="page-title"/>
+            <Label text="Maintain per-character checklists for main quests, side quests, badges, and other milestones."
+                   styleClass="muted-text"/>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="14" styleClass="planner-card">
+            <HBox spacing="10">
+                <ComboBox fx:id="characterSelector" promptText="Choose character" prefWidth="220"/>
+                <Button text="Add character" onAction="#handleAddCharacter"/>
+                <ComboBox fx:id="worldSelector" prefWidth="210" HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="categorySelector" prefWidth="150"/>
+                <Button text="Add checklist item" onAction="#handleAddObjective"/>
+            </HBox>
+            <Label fx:id="progressSummary" text="Add a character to start a world checklist."
+                   styleClass="section-title"/>
+            <ProgressBar fx:id="worldProgress" progress="0" maxWidth="Infinity"/>
+            <TableView fx:id="objectiveTable" editable="true" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="completeColumn" text="Done" prefWidth="90"/>
+                    <TableColumn fx:id="categoryColumn" text="Category" prefWidth="160"/>
+                    <TableColumn fx:id="objectiveColumn" text="Quest / badge / milestone" prefWidth="600"/>
+                </columns>
+                <placeholder>
+                    <Label text="Add the milestones you want to track for this character and world."/>
+                </placeholder>
+            </TableView>
+            <Label text="World lists are a scaffold: add the objectives relevant to your character and playthrough."
+                   wrapText="true" styleClass="muted-text"/>
+        </VBox>
+    </center>
+</BorderPane>
