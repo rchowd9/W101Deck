@@ -25,13 +25,13 @@ const spells = [
   { id: "forest-lord", name: "Forest Lord", school: "Life", rank: 8, type: "Damage", pipCost: 8, description: "Life damage to all enemies." },
   { id: "rebirth", name: "Rebirth", school: "Life", rank: 8, type: "Healing", pipCost: 8, description: "Heal all allies and grant them a protective ward." },
   { id: "banshee", name: "Banshee", school: "Death", rank: 3, type: "Damage", pipCost: 3, description: "Death damage to one enemy and weaken its next attack." },
-  { id: "vampire", name: "Vampire", school: "Death", rank: 4, type: "Healing", pipCost: 4, description: "Damage one enemy and return some of that damage as health." },
+  { id: "vampire", name: "Vampire", school: "Death", rank: 4, type: "Damage", pipCost: 4, description: "Damage one enemy and return some of that damage as health." },
   { id: "feint", name: "Feint", school: "Death", rank: 3, type: "Utility", pipCost: 1, description: "Place a large damage trap on one enemy, with a smaller drawback on the caster." },
-  { id: "scarecrow", name: "Scarecrow", school: "Death", rank: 7, type: "Healing", pipCost: 7, description: "Damage all enemies and restore health to the caster based on damage dealt." },
+  { id: "scarecrow", name: "Scarecrow", school: "Death", rank: 7, type: "Damage", pipCost: 7, description: "Damage all enemies and restore health to the caster based on damage dealt." },
   { id: "scarab", name: "Scarab", school: "Balance", rank: 1, type: "Damage", pipCost: 1, description: "Single-target Balance damage." },
   { id: "sandstorm", name: "Sandstorm", school: "Balance", rank: 4, type: "Damage", pipCost: 4, description: "Balance damage to all enemies." },
   { id: "power-nova", name: "Power Nova", school: "Balance", rank: 5, type: "Damage", pipCost: 5, description: "Balance damage to all enemies and weaken their next attacks." },
-  { id: "judgement", name: "Judgement", school: "Balance", rank: 8, type: "Damage", pipCost: 0, description: "Single-target Balance damage that scales with pips spent." },
+  { id: "judgement", name: "Judgement", school: "Balance", rank: 8, type: "Damage", pipCost: 0, variablePipCost: true, description: "Single-target Balance damage that scales with pips spent." },
   { id: "shadow-shrike", name: "Shadow Shrike", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, description: "Shadow transformation that boosts offensive pressure and armor piercing, with a backlash drawback." },
   { id: "shadow-sentinel", name: "Shadow Sentinel", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, description: "Shadow transformation focused on resistance and drawing enemy attacks, with a backlash drawback." },
   { id: "shadow-seraph", name: "Shadow Seraph", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, description: "Shadow transformation focused on stronger healing, with a backlash drawback." }
@@ -101,6 +101,9 @@ function saveDeck() {
 
 function formatSpellCost(spell) {
   const costs = [];
+  if (spell.variablePipCost) {
+    costs.push("Variable pip cost");
+  }
   if (spell.pipCost > 0) {
     costs.push(`${spell.pipCost} ${spell.pipCost === 1 ? "pip" : "pips"}`);
   }
@@ -198,13 +201,14 @@ function renderDeck() {
 }
 
 function renderStats() {
-  const pipTotal = deck.reduce((total, spell) => total + spell.pipCost, 0);
+  const fixedCostSpells = deck.filter((spell) => !spell.variablePipCost);
+  const pipTotal = fixedCostSpells.reduce((total, spell) => total + spell.pipCost, 0);
   const count = deck.length;
   cardCount.replaceChildren(document.createTextNode(String(count)));
   const capacity = document.createElement("span");
   capacity.textContent = ` / ${MAX_DECK_SIZE} cards`;
   cardCount.append(capacity);
-  averagePips.textContent = (count === 0 ? 0 : pipTotal / count).toFixed(1);
+  averagePips.textContent = (fixedCostSpells.length === 0 ? 0 : pipTotal / fixedCostSpells.length).toFixed(1);
   progress.setAttribute("aria-valuenow", String(count));
   progressFill.style.width = `${(count / MAX_DECK_SIZE) * 100}%`;
 }
@@ -231,11 +235,12 @@ document.querySelector("#export-deck").addEventListener("click", () => {
   const cards = deck.map((spell) =>
     `- ${spell.name} (${spell.school}, Rank ${spell.rank}, ${formatSpellCost(spell)})`
   );
-  const totalPips = deck.reduce((total, spell) => total + spell.pipCost, 0);
+  const fixedCostSpells = deck.filter((spell) => !spell.variablePipCost);
+  const totalPips = fixedCostSpells.reduce((total, spell) => total + spell.pipCost, 0);
   const summary = [
     "Wizard101 Deck Builder — Deck Export",
     `Cards: ${deck.length}/${MAX_DECK_SIZE}`,
-    `Average pip cost: ${deck.length === 0 ? "0.0" : (totalPips / deck.length).toFixed(1)}`,
+    `Average fixed pip cost: ${fixedCostSpells.length === 0 ? "0.0" : (totalPips / fixedCostSpells.length).toFixed(1)} (variable-cost spells excluded)`,
     "",
     ...(cards.length > 0 ? cards : ["(No cards in this deck yet.)"]),
     "",

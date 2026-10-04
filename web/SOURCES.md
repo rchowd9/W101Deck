@@ -16,4 +16,5 @@ details and labels its deck-building suggestions as fan-made advice.
 The spell list in `app.js` is a hand-curated fan-made sample catalog, not a
 complete or authoritative spell database. Ranks are included as a planning aid;
 the Shadow entries describe broad transformation roles rather than exact
-mechanics. Check current in-game details before relying on spell values.
+mechanics, and variable pip costs are identified separately. Check current
+in-game details before relying on spell values.
