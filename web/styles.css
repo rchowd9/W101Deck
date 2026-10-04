@@ -322,11 +322,40 @@ select:focus {
   background: #eaf5ee;
 }
 
+.school-death {
+  color: #765082;
+  background: #f2eaf6;
+}
+
+.school-balance {
+  color: #92712d;
+  background: #f8f2df;
+}
+
+.school-myth {
+  color: #6952a0;
+  background: #f0ebfa;
+}
+
+.school-shadow {
+  color: #433b61;
+  background: #e9e6f2;
+}
+
 .spell-card h3,
 .deck-card h3 {
   margin-top: 12px;
   color: var(--navy);
   font-size: 14px;
+}
+
+.spell-meta {
+  margin-top: 5px;
+  color: #77849a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .spell-description {

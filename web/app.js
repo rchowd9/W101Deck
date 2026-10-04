@@ -2,15 +2,44 @@ const MAX_DECK_SIZE = 64;
 const SAVED_DECK_KEY = "wizard101-deck-builder";
 
 const spells = [
-  { id: "fire-cat", name: "Fire Cat", school: "Fire", pipCost: 1, description: "80–120 Fire Damage" },
-  { id: "heckhound", name: "Heckhound", school: "Fire", pipCost: 1, description: "130 Fire Damage per Pip over 3 turns" },
-  { id: "storm-shark", name: "Storm Shark", school: "Storm", pipCost: 3, description: "375–435 Storm Damage" },
-  { id: "tower-shield", name: "Tower Shield", school: "Ice", pipCost: 0, description: "−50% to next damage spell" },
-  { id: "satyr", name: "Satyr", school: "Life", pipCost: 4, description: "860 Health to target" }
+  { id: "fire-cat", name: "Fire Cat", school: "Fire", rank: 1, type: "Damage", pipCost: 1, description: "Single-target Fire damage." },
+  { id: "heckhound", name: "Heckhound", school: "Fire", rank: 3, type: "Damage", pipCost: 1, description: "Damage over time; its total damage scales with the pips invested." },
+  { id: "meteor-strike", name: "Meteor Strike", school: "Fire", rank: 4, type: "Damage", pipCost: 4, description: "Fire damage to all enemies." },
+  { id: "fire-dragon", name: "Fire Dragon", school: "Fire", rank: 7, type: "Damage", pipCost: 7, description: "Heavy Fire damage to all enemies, followed by damage over time." },
+  { id: "rain-of-fire", name: "Rain of Fire", school: "Fire", rank: 9, type: "Damage", pipCost: 9, description: "Powerful Fire damage to all enemies with a damage-over-time effect." },
+  { id: "frost-beetle", name: "Frost Beetle", school: "Ice", rank: 1, type: "Damage", pipCost: 1, description: "Single-target Ice damage." },
+  { id: "tower-shield", name: "Tower Shield", school: "Ice", rank: 2, type: "Defense", pipCost: 0, description: "Reduce the next incoming damage from any school." },
+  { id: "ice-colossus", name: "Ice Colossus", school: "Ice", rank: 5, type: "Damage", pipCost: 5, description: "Ice damage to one enemy and weaken its next attack." },
+  { id: "blizzard", name: "Blizzard", school: "Ice", rank: 6, type: "Damage", pipCost: 6, description: "Ice damage to all enemies." },
+  { id: "frost-giant", name: "Frost Giant", school: "Ice", rank: 7, type: "Damage", pipCost: 7, description: "Ice damage to all enemies and stun them." },
+  { id: "thunder-snake", name: "Thunder Snake", school: "Storm", rank: 1, type: "Damage", pipCost: 1, description: "Single-target Storm damage." },
+  { id: "storm-shark", name: "Storm Shark", school: "Storm", rank: 3, type: "Damage", pipCost: 3, description: "Strong single-target Storm damage." },
+  { id: "tempest", name: "Tempest", school: "Storm", rank: 4, type: "Damage", pipCost: 4, description: "Storm damage to all enemies; damage increases with pips invested." },
+  { id: "storm-lord", name: "Storm Lord", school: "Storm", rank: 7, type: "Damage", pipCost: 7, description: "Storm damage to all enemies and stun them." },
+  { id: "blood-bat", name: "Blood Bat", school: "Myth", rank: 1, type: "Damage", pipCost: 1, description: "Single-target Myth damage." },
+  { id: "humongofrog", name: "Humongofrog", school: "Myth", rank: 4, type: "Damage", pipCost: 4, description: "Myth damage to all enemies." },
+  { id: "orthus", name: "Orthrus", school: "Myth", rank: 7, type: "Damage", pipCost: 7, description: "Powerful Myth damage to one enemy." },
+  { id: "medusa", name: "Medusa", school: "Myth", rank: 8, type: "Damage", pipCost: 8, description: "Heavy Myth damage and a stun against one enemy." },
+  { id: "imp", name: "Imp", school: "Life", rank: 1, type: "Healing", pipCost: 1, description: "Small heal to one ally." },
+  { id: "satyr", name: "Satyr", school: "Life", rank: 4, type: "Healing", pipCost: 4, description: "Large heal to one ally." },
+  { id: "forest-lord", name: "Forest Lord", school: "Life", rank: 8, type: "Damage", pipCost: 8, description: "Life damage to all enemies." },
+  { id: "rebirth", name: "Rebirth", school: "Life", rank: 8, type: "Healing", pipCost: 8, description: "Heal all allies and grant them a protective ward." },
+  { id: "banshee", name: "Banshee", school: "Death", rank: 3, type: "Damage", pipCost: 3, description: "Death damage to one enemy and weaken its next attack." },
+  { id: "vampire", name: "Vampire", school: "Death", rank: 4, type: "Healing", pipCost: 4, description: "Damage one enemy and return some of that damage as health." },
+  { id: "feint", name: "Feint", school: "Death", rank: 3, type: "Utility", pipCost: 1, description: "Place a large damage trap on one enemy, with a smaller drawback on the caster." },
+  { id: "scarecrow", name: "Scarecrow", school: "Death", rank: 7, type: "Healing", pipCost: 7, description: "Damage all enemies and restore health to the caster based on damage dealt." },
+  { id: "scarab", name: "Scarab", school: "Balance", rank: 1, type: "Damage", pipCost: 1, description: "Single-target Balance damage." },
+  { id: "sandstorm", name: "Sandstorm", school: "Balance", rank: 4, type: "Damage", pipCost: 4, description: "Balance damage to all enemies." },
+  { id: "power-nova", name: "Power Nova", school: "Balance", rank: 5, type: "Damage", pipCost: 5, description: "Balance damage to all enemies and weaken their next attacks." },
+  { id: "judgement", name: "Judgement", school: "Balance", rank: 8, type: "Damage", pipCost: 0, description: "Single-target Balance damage that scales with pips spent." },
+  { id: "shadow-shrike", name: "Shadow Shrike", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, description: "Shadow transformation that boosts offensive pressure and armor piercing, with a backlash drawback." },
+  { id: "shadow-sentinel", name: "Shadow Sentinel", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, description: "Shadow transformation focused on resistance and drawing enemy attacks, with a backlash drawback." },
+  { id: "shadow-seraph", name: "Shadow Seraph", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, description: "Shadow transformation focused on stronger healing, with a backlash drawback." }
 ];
 
 const deck = [];
 const schoolFilter = document.querySelector("#school-filter");
+const typeFilter = document.querySelector("#type-filter");
 const spellSearch = document.querySelector("#spell-search");
 const catalog = document.querySelector("#spell-catalog");
 const deckList = document.querySelector("#deck-list");
@@ -70,12 +99,25 @@ function saveDeck() {
   }
 }
 
+function formatSpellCost(spell) {
+  const costs = [];
+  if (spell.pipCost > 0) {
+    costs.push(`${spell.pipCost} ${spell.pipCost === 1 ? "pip" : "pips"}`);
+  }
+  if (spell.shadowPipCost) {
+    costs.push(`${spell.shadowPipCost} ${spell.shadowPipCost === 1 ? "Shadow pip" : "Shadow pips"}`);
+  }
+  return costs.length > 0 ? costs.join(" + ") : "0 pips";
+}
+
 function renderCatalog() {
   const selectedSchool = schoolFilter.value;
+  const selectedType = typeFilter.value;
   const searchTerm = spellSearch.value.trim().toLowerCase();
   const availableSpells = spells.filter((spell) =>
     (selectedSchool === "All Schools" || spell.school === selectedSchool) &&
-    `${spell.name} ${spell.school} ${spell.description}`.toLowerCase().includes(searchTerm)
+    (selectedType === "All Types" || spell.type === selectedType) &&
+    `${spell.name} ${spell.school} ${spell.type} rank ${spell.rank} ${spell.description}`.toLowerCase().includes(searchTerm)
   );
 
   catalog.replaceChildren();
@@ -93,6 +135,10 @@ function renderCatalog() {
     const name = document.createElement("h3");
     name.textContent = spell.name;
 
+    const metadata = document.createElement("p");
+    metadata.className = "spell-meta";
+    metadata.textContent = `Rank ${spell.rank} · ${spell.type}`;
+
     const description = document.createElement("p");
     description.className = "spell-description";
     description.textContent = spell.description;
@@ -101,7 +147,7 @@ function renderCatalog() {
     footer.className = "spell-footer";
     const cost = document.createElement("span");
     cost.className = "pip-cost";
-    cost.textContent = `${spell.pipCost} ${spell.pipCost === 1 ? "pip" : "pips"}`;
+    cost.textContent = formatSpellCost(spell);
 
     const addButton = document.createElement("button");
     addButton.className = "button button-primary";
@@ -116,7 +162,7 @@ function renderCatalog() {
     });
 
     footer.append(cost, addButton);
-    card.append(school, name, description, footer);
+    card.append(school, name, metadata, description, footer);
     catalog.append(card);
   }
 }
@@ -133,7 +179,7 @@ function renderDeck() {
     const name = document.createElement("h3");
     name.textContent = spell.name;
     const meta = document.createElement("p");
-    meta.textContent = `${spell.school} · ${spell.pipCost} ${spell.pipCost === 1 ? "pip" : "pips"}`;
+    meta.textContent = `${spell.school} · Rank ${spell.rank} · ${formatSpellCost(spell)}`;
     details.append(name, meta);
 
     const removeButton = document.createElement("button");
@@ -171,6 +217,7 @@ function render() {
 }
 
 schoolFilter.addEventListener("change", renderCatalog);
+typeFilter.addEventListener("change", renderCatalog);
 spellSearch.addEventListener("input", renderCatalog);
 const requestedSchool = new URLSearchParams(window.location.search).get("school");
 if ([...schoolFilter.options].some((option) => option.value === requestedSchool)) {
@@ -182,7 +229,7 @@ document.querySelector("#reset-deck").addEventListener("click", () => {
 });
 document.querySelector("#export-deck").addEventListener("click", () => {
   const cards = deck.map((spell) =>
-    `- ${spell.name} (${spell.school}, ${spell.pipCost} ${spell.pipCost === 1 ? "pip" : "pips"})`
+    `- ${spell.name} (${spell.school}, Rank ${spell.rank}, ${formatSpellCost(spell)})`
   );
   const totalPips = deck.reduce((total, spell) => total + spell.pipCost, 0);
   const summary = [

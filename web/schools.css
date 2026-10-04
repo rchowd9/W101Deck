@@ -25,6 +25,21 @@
   background: #f0ebfa;
 }
 
+.shadow-guide {
+  margin-top: 22px;
+  background:
+    radial-gradient(ellipse at 86% 10%, rgb(83 70 126 / 19%), transparent 38%),
+    linear-gradient(130deg, #fff 10%, #f2f0f8 100%);
+}
+
+.shadow-guide .guide-number {
+  color: #615780;
+}
+
+.shadow-cards {
+  margin-top: 25px;
+}
+
 .guide-hero h2 {
   max-width: 600px;
   color: var(--navy);

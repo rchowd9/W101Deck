@@ -14,9 +14,10 @@ version and character.
 
 This repository contains a JavaFX desktop app and a separate static web edition.
 Both let you filter the sample spell catalog, add and remove cards, track deck
-size up to 64 cards, and reset the deck. The web edition also provides spell
-search, browser-local deck saving, text export, an attributed Myth-school field
-guide, and an offline-ready installable shell.
+size up to 64 cards, and reset the deck. The web edition also provides spell and spell-type search, browser-local deck
+saving, text export, an attributed Myth and fan-made Shadow school guide, and
+an offline-ready installable shell. Its sample catalog includes higher-rank
+spells and Shadow transformations; verify current in-game details before use.
 
 ## Run the JavaFX desktop app
 

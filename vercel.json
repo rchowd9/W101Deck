@@ -1,5 +1,11 @@
 {
   "outputDirectory": "web",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/schools",
+      "destination": "/schools.html"
+    }
+  ]
 }
