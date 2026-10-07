@@ -14,10 +14,13 @@ version and character.
 
 This repository contains a JavaFX desktop app and a separate static web edition.
 Both let you filter the sample spell catalog, add and remove cards, track deck
-size up to 64 cards, and reset the deck. The web edition also provides spell and spell-type search, browser-local deck
-saving, text export, an attributed Myth and fan-made Shadow school guide, and
-an offline-ready installable shell. Its sample catalog includes higher-rank
-spells and Shadow transformations; verify current in-game details before use.
+size up to 64 cards, and reset the deck. The web edition also provides spell
+and spell-type search, multiple browser-local deck workspaces with encounter
+notes, deck composition and pip-curve analysis, an opening-hand and mulligan
+simulator, text export, portable JSON workspace backups, an attributed Myth
+and fan-made Shadow school guide, and an offline-ready installable shell. Its
+sample catalog includes higher-rank spells and Shadow transformations; verify
+current in-game details before use.
 
 ## Run the JavaFX desktop app
 
@@ -46,8 +49,11 @@ py -m http.server 8000 --directory web
 ```
 
 Then open `http://localhost:8000`. The browser edition has no build step or
-package dependencies. Directly opening `index.html` also works, but browsers
-only enable the offline app cache on localhost or HTTPS.
+package dependencies. Deck workspaces are saved in the current browser;
+**Export workspace** and **Import workspace** let you move or back up all
+saved decks as JSON. Import replaces the current workspace after confirmation.
+Directly opening `index.html` also works, but browsers only enable the offline
+app cache on localhost or HTTPS.
 
 ## Deploy the web edition to Vercel
 
