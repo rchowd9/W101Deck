@@ -473,6 +473,8 @@ textarea:focus {
 
 .deck-list {
   display: grid;
+  max-height: 460px;
+  overflow-y: auto;
   gap: 9px;
 }
 
