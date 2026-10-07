@@ -174,6 +174,7 @@ function renderWorkspace() {
     option.selected = record.id === workspace.activeDeckId;
     deckPicker.append(option);
   }
+  document.querySelector("#deck-title").textContent = currentRecord.name;
   if (document.activeElement !== deckNameInput) deckNameInput.value = currentRecord.name;
   if (document.activeElement !== deckEncounterInput) deckEncounterInput.value = currentRecord.encounter;
   if (document.activeElement !== deckNotesInput) deckNotesInput.value = currentRecord.notes;
@@ -225,8 +226,9 @@ function renderHand() {
   const selectedCount = selectedMulligans.size;
   mulliganButton.hidden = simulatedHand.length === 0;
   mulliganButton.disabled = selectedCount === 0 || remainingCards.length === 0;
-  mulliganButton.textContent = selectedCount > 0
-    ? `Redraw ${selectedCount} selected ${selectedCount === 1 ? "card" : "cards"}`
+  const redrawCount = Math.min(selectedCount, remainingCards.length);
+  mulliganButton.textContent = selectedCount > 0 && redrawCount > 0
+    ? `Redraw ${redrawCount} selected ${redrawCount === 1 ? "card" : "cards"}`
     : "Select cards to mulligan";
 }
 
@@ -500,11 +502,7 @@ document.querySelector("#export-deck").addEventListener("click", () => {
     "",
     "Unofficial fan-made planner. Not affiliated with KingsIsle Entertainment."
   ].join("\n");
-  const download = document.createElement("a");
-  download.href = URL.createObjectURL(new Blob([summary], { type: "text/plain;charset=utf-8" }));
-  download.download = "wizard101-deck.txt";
-  download.click();
-  window.setTimeout(() => URL.revokeObjectURL(download.href), 1000);
+  downloadFile("wizard101-deck.txt", summary, "text/plain;charset=utf-8");
 });
 
 function downloadFile(filename, content, type) {
