@@ -1,5 +1,6 @@
 const MAX_DECK_SIZE = 64;
-const SAVED_DECK_KEY = "wizard101-deck-builder";
+const SAVED_DECK_KEY = "wizard101-deck-builder-workspace";
+const LEGACY_DECK_KEY = "wizard101-deck-builder";
 
 const spells = [
   { id: "fire-cat", name: "Fire Cat", school: "Fire", rank: 1, type: "Damage", pipCost: 1, description: "Single-target Fire damage." },
@@ -37,7 +38,14 @@ const spells = [
   { id: "shadow-seraph", name: "Shadow Seraph", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, description: "Shadow transformation focused on stronger healing, with a backlash drawback." }
 ];
 
-const deck = [];
+let workspace = {
+  activeDeckId: "default",
+  decks: [{ id: "default", name: "Questing deck", encounter: "", notes: "", spellIds: [] }]
+};
+let deck = [];
+let simulatedHand = [];
+let remainingCards = [];
+const selectedMulligans = new Set();
 const schoolFilter = document.querySelector("#school-filter");
 const typeFilter = document.querySelector("#type-filter");
 const spellSearch = document.querySelector("#spell-search");
@@ -50,34 +58,88 @@ const averagePips = document.querySelector("#average-pips");
 const progress = document.querySelector(".progress-track");
 const progressFill = document.querySelector("#progress-fill");
 const resultCount = document.querySelector("#result-count");
+const deckPicker = document.querySelector("#deck-picker");
+const deckNameInput = document.querySelector("#deck-name");
+const deckEncounterInput = document.querySelector("#deck-encounter");
+const deckNotesInput = document.querySelector("#deck-notes");
+const workspaceStatus = document.querySelector("#workspace-status");
+const analysisSummary = document.querySelector("#analysis-summary");
+const analysisBreakdown = document.querySelector("#analysis-breakdown");
+const handList = document.querySelector("#hand-list");
+const handEmpty = document.querySelector("#hand-empty");
+const mulliganButton = document.querySelector("#mulligan-hand");
 
-function restoreDeck() {
-  let savedDeck;
+function createDeckRecord(name, spellIds = []) {
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name,
+    encounter: "",
+    notes: "",
+    spellIds
+  };
+}
+
+function restoreWorkspace() {
+  let savedWorkspace;
   try {
-    savedDeck = localStorage.getItem(SAVED_DECK_KEY);
+    savedWorkspace = localStorage.getItem(SAVED_DECK_KEY);
+    if (savedWorkspace === null) {
+      const legacyDeck = localStorage.getItem(LEGACY_DECK_KEY);
+      if (legacyDeck === null) return;
+      const spellIds = JSON.parse(legacyDeck);
+      if (!Array.isArray(spellIds)) {
+        throw new Error("The saved deck data is not a list of spell IDs.");
+      }
+      workspace.decks[0].spellIds = spellIds.filter((id) => typeof id === "string");
+      console.info("Migrated the saved single deck into a deck workspace.");
+      return;
+    }
   } catch (error) {
-    console.error("Could not read the saved deck from this browser.", error);
+    console.error("Could not read the saved workspace from this browser.", error);
     return;
   }
 
-  if (!savedDeck) {
-    return;
-  }
-
-  let spellIds;
   try {
-    spellIds = JSON.parse(savedDeck);
+    const parsed = JSON.parse(savedWorkspace);
+    if (!parsed || !Array.isArray(parsed.decks) || parsed.decks.length === 0) {
+      throw new Error("The saved workspace does not contain any decks.");
+    }
+    const restoredDecks = parsed.decks
+      .filter((record) => record && typeof record.id === "string" && Array.isArray(record.spellIds))
+      .map((record, index) => ({
+        id: record.id,
+        name: typeof record.name === "string" && record.name.trim() ? record.name.trim() : `Deck ${index + 1}`,
+        encounter: typeof record.encounter === "string" ? record.encounter.slice(0, 64) : "",
+        notes: typeof record.notes === "string" ? record.notes.slice(0, 500) : "",
+        spellIds: record.spellIds.filter((id) => typeof id === "string")
+      }));
+    if (restoredDecks.length === 0) {
+      throw new Error("The saved workspace does not contain any valid decks.");
+    }
+    workspace = {
+      activeDeckId: restoredDecks.some((record) => record.id === parsed.activeDeckId)
+        ? parsed.activeDeckId
+        : restoredDecks[0].id,
+      decks: restoredDecks
+    };
   } catch (error) {
-    console.error("The saved deck data is not valid JSON.", error);
-    return;
+    console.error("The saved workspace data could not be restored.", error);
   }
+}
 
-  if (!Array.isArray(spellIds)) {
-    console.error("The saved deck data is not a list of spell IDs.");
-    return;
-  }
+function activeDeckRecord() {
+  return workspace.decks.find((record) => record.id === workspace.activeDeckId);
+}
 
-  for (const id of spellIds) {
+function loadActiveDeck() {
+  const record = activeDeckRecord();
+  deck = [];
+  simulatedHand = [];
+  remainingCards = [];
+  selectedMulligans.clear();
+  if (!record) return;
+
+  for (const id of record.spellIds) {
     const spell = spells.find((candidate) => candidate.id === id);
     if (!spell) {
       console.warn(`Skipping unknown saved spell ID: ${id}`);
@@ -92,10 +154,138 @@ function restoreDeck() {
 }
 
 function saveDeck() {
+  const record = activeDeckRecord();
+  if (!record) return;
+  record.spellIds = deck.map((spell) => spell.id);
   try {
-    localStorage.setItem(SAVED_DECK_KEY, JSON.stringify(deck.map((spell) => spell.id)));
+    localStorage.setItem(SAVED_DECK_KEY, JSON.stringify(workspace));
   } catch (error) {
-    console.error("Could not save the deck in this browser.", error);
+    console.error("Could not save the workspace in this browser.", error);
+  }
+}
+
+function renderWorkspace() {
+  const currentRecord = activeDeckRecord();
+  deckPicker.replaceChildren();
+  for (const record of workspace.decks) {
+    const option = document.createElement("option");
+    option.value = record.id;
+    option.textContent = record.name;
+    option.selected = record.id === workspace.activeDeckId;
+    deckPicker.append(option);
+  }
+  if (document.activeElement !== deckNameInput) deckNameInput.value = currentRecord.name;
+  if (document.activeElement !== deckEncounterInput) deckEncounterInput.value = currentRecord.encounter;
+  if (document.activeElement !== deckNotesInput) deckNotesInput.value = currentRecord.notes;
+  document.querySelector("#delete-deck").disabled = workspace.decks.length === 1;
+}
+
+function setWorkspaceStatus(message, isError = false) {
+  workspaceStatus.textContent = message;
+  workspaceStatus.classList.toggle("status-error", isError);
+}
+
+function resetSimulator() {
+  simulatedHand = [];
+  remainingCards = [];
+  selectedMulligans.clear();
+}
+
+function renderHand() {
+  handList.replaceChildren();
+  handEmpty.hidden = simulatedHand.length > 0;
+  const canDrawAgain = deck.length > 0;
+  document.querySelector("#draw-hand").disabled = !canDrawAgain;
+
+  simulatedHand.forEach((card, index) => {
+    const button = document.createElement("button");
+    button.className = `hand-card${selectedMulligans.has(card.instanceId) ? " is-mulligan" : ""}`;
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(selectedMulligans.has(card.instanceId)));
+    button.setAttribute("aria-label", `${card.spell.name}, ${selectedMulligans.has(card.instanceId) ? "marked to redraw" : "kept"}`);
+    const name = document.createElement("strong");
+    name.textContent = card.spell.name;
+    const details = document.createElement("span");
+    details.textContent = `${card.spell.school} · ${formatSpellCost(card.spell)}`;
+    const action = document.createElement("span");
+    action.className = "hand-action";
+    action.textContent = selectedMulligans.has(card.instanceId) ? "Mulligan" : "Keep";
+    button.append(name, details, action);
+    button.addEventListener("click", () => {
+      if (selectedMulligans.has(card.instanceId)) {
+        selectedMulligans.delete(card.instanceId);
+      } else {
+        selectedMulligans.add(card.instanceId);
+      }
+      renderHand();
+    });
+    handList.append(button);
+  });
+
+  const selectedCount = selectedMulligans.size;
+  mulliganButton.hidden = simulatedHand.length === 0;
+  mulliganButton.disabled = selectedCount === 0 || remainingCards.length === 0;
+  mulliganButton.textContent = selectedCount > 0
+    ? `Redraw ${selectedCount} selected ${selectedCount === 1 ? "card" : "cards"}`
+    : "Select cards to mulligan";
+}
+
+function renderAnalysis() {
+  const typeCounts = new Map();
+  const pipCounts = new Map();
+  const schoolCounts = new Map();
+  for (const spell of deck) {
+    typeCounts.set(spell.type, (typeCounts.get(spell.type) || 0) + 1);
+    schoolCounts.set(spell.school, (schoolCounts.get(spell.school) || 0) + 1);
+    if (!spell.variablePipCost) {
+      const cost = spell.pipCost;
+      pipCounts.set(cost, (pipCounts.get(cost) || 0) + 1);
+    }
+  }
+
+  const uniqueCards = new Set(deck.map((spell) => spell.id)).size;
+  analysisSummary.textContent = `${uniqueCards} unique · ${deck.length - uniqueCards} duplicate${deck.length - uniqueCards === 1 ? "" : "s"}`;
+  analysisBreakdown.replaceChildren();
+
+  const groups = [
+    { title: "Spell types", counts: typeCounts, order: ["Damage", "Healing", "Defense", "Utility", "Shadow"] },
+    { title: "Pip curve", counts: pipCounts, order: [...pipCounts.keys()].sort((a, b) => a - b).map(String), numeric: true },
+    { title: "Schools", counts: schoolCounts, order: [...schoolCounts.keys()].sort() }
+  ];
+  for (const group of groups) {
+    const section = document.createElement("div");
+    section.className = "analysis-group";
+    const heading = document.createElement("h4");
+    heading.textContent = group.title;
+    section.append(heading);
+    const entries = group.order
+      .map((key) => [key, group.counts.get(group.numeric ? Number(key) : key) || 0])
+      .filter(([, count]) => count > 0);
+    if (entries.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "analysis-empty";
+      empty.textContent = "Add cards to see this breakdown.";
+      section.append(empty);
+    } else {
+      const maxCount = Math.max(...entries.map(([, count]) => count));
+      for (const [label, count] of entries) {
+        const row = document.createElement("div");
+        row.className = "analysis-row";
+        const caption = document.createElement("span");
+        caption.textContent = group.numeric ? `${label} pip${label === "1" ? "" : "s"}` : label;
+        const bar = document.createElement("span");
+        bar.className = "analysis-bar";
+        bar.setAttribute("aria-hidden", "true");
+        const fill = document.createElement("span");
+        fill.style.width = `${(count / maxCount) * 100}%`;
+        bar.append(fill);
+        const value = document.createElement("strong");
+        value.textContent = String(count);
+        row.append(caption, bar, value);
+        section.append(row);
+      }
+    }
+    analysisBreakdown.append(section);
   }
 }
 
