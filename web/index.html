@@ -35,6 +35,24 @@
         <p class="stat-row"><span>Average fixed pip cost</span><strong id="average-pips">0.0</strong></p>
       </section>
 
+      <section class="workspace-card" aria-labelledby="workspace-title">
+        <p class="eyebrow">Plan for every encounter</p>
+        <h2 id="workspace-title">Deck workspaces</h2>
+        <label for="deck-picker">Active deck</label>
+        <select id="deck-picker" aria-label="Active deck"></select>
+        <div class="workspace-actions">
+          <button class="button button-primary" id="new-deck" type="button">New deck</button>
+          <button class="button button-secondary" id="duplicate-deck" type="button">Duplicate</button>
+          <button class="button button-secondary" id="delete-deck" type="button">Delete deck</button>
+        </div>
+        <div class="backup-actions">
+          <button class="button button-secondary" id="export-backup" type="button">Export workspace</button>
+          <button class="button button-secondary" id="import-backup" type="button">Import workspace</button>
+          <input id="backup-file" type="file" accept="application/json,.json" hidden>
+        </div>
+        <p class="workspace-status" id="workspace-status" role="status" aria-live="polite"></p>
+      </section>
+
       <section class="filter-card" aria-labelledby="filter-title">
         <h2 id="filter-title">Filter spells</h2>
         <label for="school-filter">School</label>
@@ -83,11 +101,42 @@
         <div>
           <p class="eyebrow">Your selected spells</p>
           <h2 id="deck-title">Current deck</h2>
-          <p class="deck-note">Saved in this browser. Export a copy to share.</p>
+          <p class="deck-note">Saved automatically in this browser.</p>
         </div>
+      </div>
+      <div class="deck-details">
+        <label for="deck-name">Deck name</label>
+        <input id="deck-name" class="search-input" type="text" maxlength="48" autocomplete="off">
+        <label for="deck-encounter">Encounter or use</label>
+        <input id="deck-encounter" class="search-input" type="text" maxlength="64" placeholder="e.g. Arc 2 questing, Storm boss">
+        <label for="deck-notes">Strategy notes</label>
+        <textarea id="deck-notes" class="search-input notes-input" maxlength="500" placeholder="Record a strategy, sideboard plan, or cards to test."></textarea>
       </div>
       <div class="deck-list" id="deck-list" aria-live="polite"></div>
       <p class="empty-state" id="empty-state">Your deck is empty. Add a spell from the catalog.</p>
+      <section class="deck-tool" aria-labelledby="analysis-title">
+        <div class="tool-heading">
+          <div>
+            <p class="eyebrow">At a glance</p>
+            <h3 id="analysis-title">Deck analysis</h3>
+          </div>
+          <span class="analysis-summary" id="analysis-summary"></span>
+        </div>
+        <div class="analysis-breakdown" id="analysis-breakdown"></div>
+      </section>
+      <section class="deck-tool simulator" aria-labelledby="simulator-title">
+        <div class="tool-heading">
+          <div>
+            <p class="eyebrow">Test your opening</p>
+            <h3 id="simulator-title">Hand simulator</h3>
+          </div>
+          <button class="button button-primary" id="draw-hand" type="button">Draw opening hand</button>
+        </div>
+        <p class="simulator-note">Draw up to 7 cards, then mark cards to mulligan. Redrawn cards go to the bottom of the deck.</p>
+        <div class="hand-list" id="hand-list" aria-live="polite"></div>
+        <button class="button button-secondary" id="mulligan-hand" type="button" hidden>Redraw selected cards</button>
+        <p class="empty-state hand-empty" id="hand-empty">Build a deck, then draw a sample opening hand.</p>
+      </section>
     </section>
   </main>
   <footer class="site-footer">
