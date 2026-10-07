@@ -350,6 +350,7 @@ function renderCatalog() {
     addButton.addEventListener("click", () => {
       if (deck.length < MAX_DECK_SIZE) {
         deck.push(spell);
+        resetSimulator();
         render();
       }
     });
@@ -382,6 +383,7 @@ function renderDeck() {
     removeButton.setAttribute("aria-label", `Remove ${spell.name} from deck`);
     removeButton.addEventListener("click", () => {
       deck.splice(index, 1);
+      resetSimulator();
       render();
     });
 
@@ -404,21 +406,80 @@ function renderStats() {
 }
 
 function render() {
+  renderWorkspace();
   renderCatalog();
   renderDeck();
   renderStats();
+  renderAnalysis();
+  renderHand();
   saveDeck();
 }
 
 schoolFilter.addEventListener("change", renderCatalog);
 typeFilter.addEventListener("change", renderCatalog);
 spellSearch.addEventListener("input", renderCatalog);
+deckPicker.addEventListener("change", () => {
+  workspace.activeDeckId = deckPicker.value;
+  loadActiveDeck();
+  setWorkspaceStatus(`Switched to ${activeDeckRecord().name}.`);
+  render();
+});
+document.querySelector("#new-deck").addEventListener("click", () => {
+  const record = createDeckRecord(`New deck ${workspace.decks.length + 1}`);
+  workspace.decks.push(record);
+  workspace.activeDeckId = record.id;
+  loadActiveDeck();
+  setWorkspaceStatus("New deck created.");
+  render();
+  deckNameInput.focus();
+  deckNameInput.select();
+});
+document.querySelector("#duplicate-deck").addEventListener("click", () => {
+  const current = activeDeckRecord();
+  const duplicate = createDeckRecord(`${current.name} copy`, [...current.spellIds]);
+  duplicate.encounter = current.encounter;
+  duplicate.notes = current.notes;
+  workspace.decks.push(duplicate);
+  workspace.activeDeckId = duplicate.id;
+  loadActiveDeck();
+  setWorkspaceStatus(`Created a copy of ${current.name}.`);
+  render();
+});
+document.querySelector("#delete-deck").addEventListener("click", () => {
+  const current = activeDeckRecord();
+  if (workspace.decks.length === 1 || !window.confirm(`Delete "${current.name}" and its saved cards?`)) return;
+  workspace.decks = workspace.decks.filter((record) => record.id !== current.id);
+  workspace.activeDeckId = workspace.decks[0].id;
+  loadActiveDeck();
+  setWorkspaceStatus(`Deleted ${current.name}.`);
+  render();
+});
+for (const [input, property] of [
+  [deckNameInput, "name"],
+  [deckEncounterInput, "encounter"],
+  [deckNotesInput, "notes"]
+]) {
+  input.addEventListener("input", () => {
+    const record = activeDeckRecord();
+    record[property] = input.value.trim() || (property === "name" ? "Untitled deck" : "");
+    renderWorkspace();
+    saveDeck();
+  });
+  input.addEventListener("blur", () => {
+    if (property === "name" && !input.value.trim()) {
+      input.value = activeDeckRecord().name;
+    }
+  });
+}
 const requestedSchool = new URLSearchParams(window.location.search).get("school");
 if ([...schoolFilter.options].some((option) => option.value === requestedSchool)) {
   schoolFilter.value = requestedSchool;
 }
 document.querySelector("#reset-deck").addEventListener("click", () => {
+  if (deck.length > 0 && !window.confirm(`Remove all cards from "${activeDeckRecord().name}"?`)) return;
   deck.length = 0;
+  resetSimulator();
+  setWorkspaceStatus("The active deck has been cleared.");
   render();
 });
 document.querySelector("#export-deck").addEventListener("click", () => {
@@ -429,10 +490,13 @@ document.querySelector("#export-deck").addEventListener("click", () => {
   const totalPips = fixedCostSpells.reduce((total, spell) => total + spell.pipCost, 0);
   const summary = [
     "Wizard101 Deck Builder — Deck Export",
+    `Deck: ${activeDeckRecord().name}`,
+    ...(activeDeckRecord().encounter ? [`Encounter: ${activeDeckRecord().encounter}`] : []),
     `Cards: ${deck.length}/${MAX_DECK_SIZE}`,
     `Average fixed pip cost: ${fixedCostSpells.length === 0 ? "0.0" : (totalPips / fixedCostSpells.length).toFixed(1)} (variable-cost spells excluded)`,
     "",
     ...(cards.length > 0 ? cards : ["(No cards in this deck yet.)"]),
+    ...(activeDeckRecord().notes ? ["", "Strategy notes:", activeDeckRecord().notes] : []),
     "",
     "Unofficial fan-made planner. Not affiliated with KingsIsle Entertainment."
   ].join("\n");
@@ -443,7 +507,106 @@ document.querySelector("#export-deck").addEventListener("click", () => {
   window.setTimeout(() => URL.revokeObjectURL(download.href), 1000);
 });
 
-restoreDeck();
+function downloadFile(filename, content, type) {
+  const objectUrl = URL.createObjectURL(new Blob([content], { type }));
+  const download = document.createElement("a");
+  download.href = objectUrl;
+  download.download = filename;
+  download.click();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+}
+
+document.querySelector("#export-backup").addEventListener("click", () => {
+  saveDeck();
+  const backup = {
+    format: "wizard101-deck-builder-workspace",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    activeDeckId: workspace.activeDeckId,
+    decks: workspace.decks
+  };
+  downloadFile(
+    "wizard101-deck-workspace.json",
+    JSON.stringify(backup, null, 2),
+    "application/json;charset=utf-8"
+  );
+  setWorkspaceStatus(`Exported ${workspace.decks.length} deck${workspace.decks.length === 1 ? "" : "s"} to a JSON backup.`);
+});
+
+const backupFile = document.querySelector("#backup-file");
+document.querySelector("#import-backup").addEventListener("click", () => backupFile.click());
+backupFile.addEventListener("change", async () => {
+  const file = backupFile.files[0];
+  if (!file) return;
+  try {
+    const parsed = JSON.parse(await file.text());
+    if (
+      parsed?.format !== "wizard101-deck-builder-workspace" ||
+      parsed.version !== 1 ||
+      !Array.isArray(parsed.decks) ||
+      parsed.decks.length === 0
+    ) {
+      throw new Error("Choose a valid Wizard101 Deck Builder workspace backup.");
+    }
+    const importedDecks = parsed.decks.map((record, index) => {
+      if (!record || typeof record !== "object" || !Array.isArray(record.spellIds)) {
+        throw new Error(`Deck ${index + 1} in the backup is not valid.`);
+      }
+      return {
+        ...createDeckRecord(
+          typeof record.name === "string" && record.name.trim() ? record.name.trim().slice(0, 48) : `Deck ${index + 1}`,
+          record.spellIds.filter((id) => typeof id === "string")
+        ),
+        encounter: typeof record.encounter === "string" ? record.encounter.slice(0, 64) : "",
+        notes: typeof record.notes === "string" ? record.notes.slice(0, 500) : "",
+        previousId: typeof record.id === "string" ? record.id : ""
+      };
+    });
+    if (!window.confirm(`Replace your ${workspace.decks.length} saved deck${workspace.decks.length === 1 ? "" : "s"} with ${importedDecks.length} deck${importedDecks.length === 1 ? "" : "s"} from this backup?`)) {
+      return;
+    }
+    const importedActive = importedDecks.find((record) => record.previousId === parsed.activeDeckId);
+    workspace = {
+      activeDeckId: importedActive ? importedActive.id : importedDecks[0].id,
+      decks: importedDecks.map(({ previousId, ...record }) => record)
+    };
+    loadActiveDeck();
+    render();
+    setWorkspaceStatus(`Imported ${workspace.decks.length} deck${workspace.decks.length === 1 ? "" : "s"} from backup.`);
+  } catch (error) {
+    console.error("Could not import the workspace backup.", error);
+    setWorkspaceStatus(error instanceof SyntaxError ? "The selected file is not valid JSON." : error.message, true);
+  } finally {
+    backupFile.value = "";
+  }
+});
+
+document.querySelector("#draw-hand").addEventListener("click", () => {
+  const shuffled = deck.map((spell, instanceId) => ({ spell, instanceId }));
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  simulatedHand = shuffled.slice(0, 7);
+  remainingCards = shuffled.slice(simulatedHand.length);
+  selectedMulligans.clear();
+  renderHand();
+});
+
+mulliganButton.addEventListener("click", () => {
+  if (selectedMulligans.size === 0 || remainingCards.length === 0) return;
+  const keepers = simulatedHand.filter((card) => !selectedMulligans.has(card.instanceId));
+  const redrawCount = Math.min(selectedMulligans.size, remainingCards.length);
+  const returnedCards = simulatedHand.filter((card) => selectedMulligans.has(card.instanceId));
+  const replacements = remainingCards.splice(0, redrawCount);
+  remainingCards.push(...returnedCards);
+  simulatedHand = [...keepers, ...replacements];
+  selectedMulligans.clear();
+  renderHand();
+});
+
+restoreWorkspace();
+loadActiveDeck();
 render();
 
 if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
