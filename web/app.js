@@ -198,7 +198,7 @@ function renderHand() {
   const canDrawAgain = deck.length > 0;
   document.querySelector("#draw-hand").disabled = !canDrawAgain;
 
-  simulatedHand.forEach((card, index) => {
+  simulatedHand.forEach((card) => {
     const button = document.createElement("button");
     button.className = `hand-card${selectedMulligans.has(card.instanceId) ? " is-mulligan" : ""}`;
     button.type = "button";
