@@ -17,8 +17,8 @@ Both let you filter the sample spell catalog, add and remove cards, track deck
 size up to 64 cards, and reset the deck. The web edition also provides spell
 and spell-type search, multiple browser-local deck workspaces with encounter
 notes, deck composition and pip-curve analysis, an opening-hand and mulligan
-simulator, text export, portable JSON workspace backups, an attributed Myth
-and fan-made Shadow school guide, and an offline-ready installable shell. Its
+simulator, text export, portable JSON workspace backups, a school guide with
+deck-planning tips for every school, and an offline-ready installable shell. Its
 sample catalog includes higher-rank spells and Shadow transformations; verify
 current in-game details before use.
 
@@ -82,7 +82,7 @@ The first `vercel` command links the project and creates a preview deployment;
 ## Wizard101 reference
 
 The [school field guide](web/schools.html) paraphrases the Myth-school
-description available from the [official Wizard101 website](https://www.wizard101.com/).
-The guide labels its deck-planning suggestions as fan-made advice; verify current
-spell details in-game. See [web/SOURCES.md](web/SOURCES.md) for attribution and
-catalog limitations.
+description available from the [official Wizard101 website](https://www.wizard101.com/)
+and labels its other school profiles as fan-made deck-planning advice. Verify
+current spell details in-game. See [web/SOURCES.md](web/SOURCES.md) for
+attribution and catalog limitations.
