@@ -345,7 +345,7 @@ function renderCatalog() {
 
     const metadata = document.createElement("p");
     metadata.className = "spell-meta";
-    metadata.textContent = `Rank ${spell.rank} · ${spell.type}`;
+    metadata.textContent = `Rank ${spell.rank} · ${spell.type}${typeof spell.damage === "number" && spell.damage > 0 ? ` · ${formatSpellDamage(spell)}` : ""}`;
 
     const description = document.createElement("p");
     description.className = "spell-description";
@@ -388,7 +388,7 @@ function renderDeck() {
     const name = document.createElement("h3");
     name.textContent = spell.name;
     const meta = document.createElement("p");
-    meta.textContent = `${spell.school} · Rank ${spell.rank} · ${formatSpellCost(spell)}`;
+    meta.textContent = `${spell.school} · Rank ${spell.rank} · ${formatSpellCost(spell)}${typeof spell.damage === "number" && spell.damage > 0 ? ` · ${formatSpellDamage(spell)}` : ""}`;
     details.append(name, meta);
 
     const removeButton = document.createElement("button");
