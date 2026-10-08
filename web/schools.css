@@ -112,6 +112,46 @@
   line-height: 1.7;
 }
 
+.spell-damage-grid,
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.spell-damage-card,
+.feature-card {
+  min-height: 190px;
+  padding: 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 8px 24px rgb(31 48 78 / 4%);
+}
+
+.spell-damage-card h3,
+.feature-card h3 {
+  margin-top: 16px;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.spell-damage-card strong {
+  display: block;
+  margin-top: 10px;
+  color: #4d5f84;
+  font-size: 22px;
+}
+
+.spell-damage-card p,
+.feature-card p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
 .source-note {
   margin-top: 18px;
   padding: 18px 20px;
