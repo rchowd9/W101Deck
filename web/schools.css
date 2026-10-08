@@ -180,11 +180,15 @@
     padding: 22px 20px 38px;
   }
 
-  .guide-cards {
+  .guide-cards,
+  .spell-damage-grid,
+  .feature-grid {
     grid-template-columns: 1fr;
   }
 
-  .guide-card {
+  .guide-card,
+  .spell-damage-card,
+  .feature-card {
     min-height: auto;
   }
 }
