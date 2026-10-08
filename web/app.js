@@ -305,6 +305,19 @@ function formatSpellCost(spell) {
   return costs.length > 0 ? costs.join(" + ") : "0 pips";
 }
 
+function formatSpellDamage(spell) {
+  if (typeof spell.damage === "number" && spell.damage > 0) {
+    return `${spell.damage} dmg`;
+  }
+  if (spell.type === "Healing") {
+    return "Heals";
+  }
+  if (spell.type === "Defense") {
+    return "Defense";
+  }
+  return "No direct damage";
+}
+
 function renderCatalog() {
   const selectedSchool = schoolFilter.value;
   const selectedType = typeFilter.value;
