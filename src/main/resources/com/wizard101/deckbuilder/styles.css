@@ -146,6 +146,37 @@
     -fx-background-radius: 5;
 }
 
+.battle-card {
+    -fx-padding: 12;
+    -fx-background-color: #f7fafb;
+    -fx-background-radius: 8px;
+    -fx-border-color: #dfe7eb;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+}
+
+.analysis-summary {
+    -fx-text-fill: #3d5a80;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.analysis-box {
+    -fx-padding: 4 0 0 0;
+}
+
+.muted-text {
+    -fx-text-fill: #667985;
+}
+
+.hand-card {
+    -fx-padding: 10;
+    -fx-background-color: white;
+    -fx-background-radius: 6px;
+    -fx-border-color: #dce3e7;
+    -fx-border-radius: 6px;
+}
+
 .alert-text {
     -fx-text-fill: #a94442;
     -fx-font-weight: bold;
