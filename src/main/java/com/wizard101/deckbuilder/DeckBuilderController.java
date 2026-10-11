@@ -207,11 +207,18 @@ public class DeckBuilderController {
         renderOpeningHand();
     }
 
+    private void updateMulliganButtonState() {
+        boolean hasHand = !openingHand.isEmpty();
+        boolean hasSelection = !mulliganIndexes.isEmpty();
+        mulliganButton.setVisible(hasHand);
+        mulliganButton.setManaged(hasHand);
+        mulliganButton.setDisable(!hasSelection);
+        mulliganButton.setText(hasSelection ? "Redraw selected cards" : "Select cards to mulligan");
+    }
+
     private void renderOpeningHand() {
         handTilePane.getChildren().clear();
-        mulliganButton.setVisible(!openingHand.isEmpty());
-        mulliganButton.setManaged(!openingHand.isEmpty());
-        mulliganButton.setText(mulliganIndexes.isEmpty() ? "Select cards to mulligan" : "Redraw selected cards");
+        updateMulliganButtonState();
 
         for (int index = 0; index < openingHand.size(); index++) {
             Card card = openingHand.get(index);
@@ -228,7 +235,7 @@ public class DeckBuilderController {
                 } else {
                     mulliganIndexes.remove(index);
                 }
-                mulliganButton.setText(mulliganIndexes.isEmpty() ? "Select cards to mulligan" : "Redraw selected cards");
+                updateMulliganButtonState();
             });
             handCard.getChildren().addAll(name, details, mulliganCheck);
             handTilePane.getChildren().add(handCard);
