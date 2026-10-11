@@ -4,42 +4,46 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.wizard101.deckbuilder.DeckBuilderController" 
-            prefHeight="700.0" prefWidth="1100.0">
-    
-    <!-- Top Header -->
+            fx:controller="com.wizard101.deckbuilder.DeckBuilderController"
+            prefHeight="760.0" prefWidth="1180.0">
+
     <top>
         <HBox spacing="10" styleClass="header">
             <Label text="Wizard101 Deck Builder" styleClass="header-title"/>
         </HBox>
     </top>
 
-    <!-- Left Sidebar: Controls & Stats -->
     <left>
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="sidebar-scroll" prefWidth="240">
-            <content>
-                <VBox spacing="10" styleClass="sidebar">
-                    <Label text="Deck Statistics" styleClass="section-title"/>
-                    <Separator/>
-                    <Label fx:id="cardCountLabel" text="Total Cards: 0 / 64"/>
-                    <Label fx:id="avgPipLabel" text="Avg Pip Cost: 0.0"/>
-                    <Separator/>
-                    <Label text="Filter Spells" styleClass="section-title"/>
-                    <ComboBox fx:id="schoolFilter" onAction="#handleSchoolFilter" maxWidth="Infinity"/>
-                    <Button text="Reset Deck" onAction="#handleResetDeck" maxWidth="Infinity"/>
-                    <Separator/>
-                    <Label text="Saved deck builds" styleClass="section-title"/>
-                    <TextField fx:id="deckNameField" promptText="Build name"/>
-                    <Button text="Save current deck" onAction="#handleSaveDeck" maxWidth="Infinity"/>
-                    <ComboBox fx:id="savedDeckSelector" promptText="Choose saved build" maxWidth="Infinity"/>
-                    <Button text="Load selected build" onAction="#handleLoadDeck" maxWidth="Infinity"/>
-                    <Button text="Export current deck..." onAction="#handleExportDeck" maxWidth="Infinity"/>
-                </VBox>
-            </content>
-        </ScrollPane>
+        <VBox spacing="14" styleClass="sidebar" prefWidth="250">
+            <VBox spacing="8">
+                <Label text="Deck statistics" styleClass="section-title"/>
+                <Separator/>
+                <Label fx:id="cardCountLabel" text="Total Cards: 0 / 64"/>
+                <Label fx:id="avgPipLabel" text="Avg Pip Cost: 0.0"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <Label text="Plan for every encounter" styleClass="section-title"/>
+                <Separator/>
+                <Label text="Active deck"/>
+                <ComboBox fx:id="savedDeckSelector" promptText="Choose saved build" maxWidth="Infinity"/>
+                <HBox spacing="8">
+                    <Button text="New deck" onAction="#handleResetDeck" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <Button text="Load" onAction="#handleLoadDeck" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <Button text="Save current deck" onAction="#handleSaveDeck" maxWidth="Infinity"/>
+                <Button text="Export current deck..." onAction="#handleExportDeck" maxWidth="Infinity"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <Label text="Filter spells" styleClass="section-title"/>
+                <Separator/>
+                <ComboBox fx:id="schoolFilter" onAction="#handleSchoolFilter" maxWidth="Infinity"/>
+                <Button text="Reset deck" onAction="#handleResetDeck" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
     </left>
 
-    <!-- Center Panel: Spell catalog -->
     <center>
         <VBox spacing="10" styleClass="content-panel">
             <Label text="Available Spells" styleClass="section-title"/>
@@ -50,9 +54,35 @@
     </center>
 
     <right>
-        <VBox spacing="10" styleClass="deck-panel" prefWidth="330">
-            <Label text="Current Deck" styleClass="section-title"/>
-            <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="list-scroll">
+        <VBox spacing="12" styleClass="deck-panel" prefWidth="360">
+            <VBox spacing="8">
+                <Label text="Current Deck" styleClass="section-title"/>
+                <TextField fx:id="deckNameField" promptText="Deck name"/>
+                <TextField fx:id="encounterField" promptText="Encounter or use"/>
+                <TextArea fx:id="notesArea" prefRowCount="3" wrapText="true" promptText="Record a strategy, sideboard plan, or cards to test."/>
+            </VBox>
+
+            <VBox spacing="8" styleClass="battle-card">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Deck analysis" styleClass="section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="analysisSummaryLabel" text="0 unique · 0 duplicates" styleClass="analysis-summary"/>
+                </HBox>
+                <VBox fx:id="analysisBox" spacing="6" styleClass="analysis-box"/>
+            </VBox>
+
+            <VBox spacing="8" styleClass="battle-card">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label text="Hand simulator" styleClass="section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="Draw opening hand" onAction="#handleDrawOpeningHand"/>
+                </HBox>
+                <Label text="Draw up to 7 cards, then mark cards to mulligan. Redrawn cards go to the bottom of the deck." wrapText="true"/>
+                <TilePane fx:id="handTilePane" hgap="8" vgap="8" prefColumns="2" styleClass="card-grid"/>
+                <Button fx:id="mulliganButton" text="Redraw selected cards" onAction="#handleMulliganSelected" visible="false" managed="false" maxWidth="Infinity"/>
+            </VBox>
+
+            <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="list-scroll" VBox.vgrow="ALWAYS">
                 <TilePane fx:id="deckTilePane" hgap="8" vgap="8" prefColumns="1" styleClass="card-grid"/>
             </ScrollPane>
         </VBox>
