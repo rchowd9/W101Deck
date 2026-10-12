@@ -222,18 +222,19 @@ public class DeckBuilderController {
 
         for (int index = 0; index < openingHand.size(); index++) {
             Card card = openingHand.get(index);
+            int cardIndex = index;
             VBox handCard = new VBox(6);
             handCard.getStyleClass().add("hand-card");
             Label name = new Label(card.getName());
             name.getStyleClass().add("spell-name");
             Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips");
             CheckBox mulliganCheck = new CheckBox("Mulligan");
-            mulliganCheck.setSelected(mulliganIndexes.contains(index));
+            mulliganCheck.setSelected(mulliganIndexes.contains(cardIndex));
             mulliganCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue) {
-                    mulliganIndexes.add(index);
+                    mulliganIndexes.add(cardIndex);
                 } else {
-                    mulliganIndexes.remove(index);
+                    mulliganIndexes.remove(cardIndex);
                 }
                 updateMulliganButtonState();
             });
