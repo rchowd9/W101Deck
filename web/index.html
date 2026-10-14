@@ -33,6 +33,8 @@
           <div class="progress-fill" id="progress-fill"></div>
         </div>
         <p class="stat-row"><span>Average fixed pip cost</span><strong id="average-pips">0.0</strong></p>
+        <p class="stat-row"><span>Unique spells</span><strong id="unique-count">0</strong></p>
+        <p class="stat-row"><span>Extra copies</span><strong id="duplicate-count">0</strong></p>
       </section>
 
       <section class="workspace-card" aria-labelledby="workspace-title">
@@ -48,6 +50,7 @@
         <div class="backup-actions">
           <button class="button button-secondary" id="export-backup" type="button">Export workspace</button>
           <button class="button button-secondary" id="import-backup" type="button">Import workspace</button>
+          <button class="button button-secondary" id="share-deck" type="button">Share current deck</button>
           <input id="backup-file" type="file" accept="application/json,.json" hidden>
         </div>
         <p class="workspace-status" id="workspace-status" role="status" aria-live="polite"></p>
@@ -76,6 +79,39 @@
           <option value="Utility">Utility</option>
           <option value="Shadow">Shadow forms</option>
         </select>
+        <label for="rank-filter">Rank</label>
+        <select id="rank-filter">
+          <option value="all">All ranks</option>
+          <option value="1">Rank 1</option>
+          <option value="2">Rank 2</option>
+          <option value="3">Rank 3</option>
+          <option value="4">Rank 4</option>
+          <option value="5">Rank 5</option>
+          <option value="6">Rank 6</option>
+          <option value="7">Rank 7</option>
+          <option value="8">Rank 8</option>
+          <option value="9">Rank 9+</option>
+        </select>
+        <label for="pip-filter">Pip cost</label>
+        <select id="pip-filter">
+          <option value="all">Any pip cost</option>
+          <option value="0">0 pips</option>
+          <option value="1">1 pip</option>
+          <option value="2">2 pips</option>
+          <option value="3">3 pips</option>
+          <option value="4">4 pips</option>
+          <option value="5">5+ pips</option>
+          <option value="variable">Variable pip cost</option>
+          <option value="shadow">Shadow pip</option>
+        </select>
+        <label for="sort-filter">Sort by</label>
+        <select id="sort-filter">
+          <option value="catalog">Catalog order</option>
+          <option value="name">Name (A–Z)</option>
+          <option value="rank">Rank (low to high)</option>
+          <option value="pips">Pip cost (low to high)</option>
+        </select>
+        <button class="button button-secondary" id="clear-filters" type="button">Clear filters</button>
         <button class="button button-secondary" id="reset-deck" type="button">Reset deck</button>
         <button class="button button-secondary" id="export-deck" type="button">Export deck</button>
       </section>
@@ -114,6 +150,16 @@
       </div>
       <div class="deck-list" id="deck-list" aria-live="polite"></div>
       <p class="empty-state" id="empty-state">Your deck is empty. Add a spell from the catalog.</p>
+      <section class="deck-tool deck-validation" aria-labelledby="validation-title">
+        <div class="tool-heading">
+          <div>
+            <p class="eyebrow">Planning guidance, not game rules</p>
+            <h3 id="validation-title">Deck check</h3>
+          </div>
+          <span class="validation-summary" id="validation-summary"></span>
+        </div>
+        <ul class="validation-list" id="validation-list" aria-live="polite"></ul>
+      </section>
       <section class="deck-tool" aria-labelledby="analysis-title">
         <div class="tool-heading">
           <div>
