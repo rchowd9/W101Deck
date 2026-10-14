@@ -746,6 +746,7 @@ function restoreSharedDeckFromUrl() {
       window.history.replaceState(null, "", url);
     } catch (error) {
       console.error("Could not remove the shared deck data from the address bar.", error);
+      setWorkspaceStatus("The shared link could not be cleared from the address bar; reloading may add the deck again.", true);
     }
   }
 }
