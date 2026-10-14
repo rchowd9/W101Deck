@@ -48,6 +48,9 @@ let remainingCards = [];
 const selectedMulligans = new Set();
 const schoolFilter = document.querySelector("#school-filter");
 const typeFilter = document.querySelector("#type-filter");
+const rankFilter = document.querySelector("#rank-filter");
+const pipFilter = document.querySelector("#pip-filter");
+const sortFilter = document.querySelector("#sort-filter");
 const spellSearch = document.querySelector("#spell-search");
 const catalog = document.querySelector("#spell-catalog");
 const deckList = document.querySelector("#deck-list");
@@ -55,6 +58,8 @@ const emptyState = document.querySelector("#empty-state");
 const noResults = document.querySelector("#no-results");
 const cardCount = document.querySelector("#card-count");
 const averagePips = document.querySelector("#average-pips");
+const uniqueCount = document.querySelector("#unique-count");
+const duplicateCount = document.querySelector("#duplicate-count");
 const progress = document.querySelector(".progress-track");
 const progressFill = document.querySelector("#progress-fill");
 const resultCount = document.querySelector("#result-count");
@@ -65,6 +70,8 @@ const deckNotesInput = document.querySelector("#deck-notes");
 const workspaceStatus = document.querySelector("#workspace-status");
 const analysisSummary = document.querySelector("#analysis-summary");
 const analysisBreakdown = document.querySelector("#analysis-breakdown");
+const validationSummary = document.querySelector("#validation-summary");
+const validationList = document.querySelector("#validation-list");
 const handList = document.querySelector("#hand-list");
 const handEmpty = document.querySelector("#hand-empty");
 const mulliganButton = document.querySelector("#mulligan-hand");
@@ -411,13 +418,55 @@ function renderStats() {
   const fixedCostSpells = deck.filter((spell) => !spell.variablePipCost);
   const pipTotal = fixedCostSpells.reduce((total, spell) => total + spell.pipCost, 0);
   const count = deck.length;
+  const uniqueCards = new Set(deck.map((spell) => spell.id)).size;
   cardCount.replaceChildren(document.createTextNode(String(count)));
   const capacity = document.createElement("span");
   capacity.textContent = ` / ${MAX_DECK_SIZE} cards`;
   cardCount.append(capacity);
   averagePips.textContent = (fixedCostSpells.length === 0 ? 0 : pipTotal / fixedCostSpells.length).toFixed(1);
+  uniqueCount.textContent = String(uniqueCards);
+  duplicateCount.textContent = String(count - uniqueCards);
   progress.setAttribute("aria-valuenow", String(count));
   progressFill.style.width = `${(count / MAX_DECK_SIZE) * 100}%`;
+}
+
+function renderValidation() {
+  validationList.replaceChildren();
+  const count = deck.length;
+  const uniqueCards = new Set(deck.map((spell) => spell.id)).size;
+  const duplicateCards = count - uniqueCards;
+  const checks = [];
+
+  if (count === 0) {
+    validationSummary.textContent = "Add cards";
+    checks.push({ text: "Add at least one spell before drawing an opening hand.", kind: "warning" });
+  } else if (count < 7) {
+    validationSummary.textContent = "Partial hand";
+    checks.push({
+      text: `Your opening hand will contain ${count} card${count === 1 ? "" : "s"}; add ${7 - count} more for a full 7-card draw.`,
+      kind: "warning"
+    });
+  } else {
+    validationSummary.textContent = "Ready to draw";
+    checks.push({ text: "This deck has enough cards for a 7-card opening hand.", kind: "success" });
+  }
+
+  if (count === MAX_DECK_SIZE) {
+    checks.push({ text: `The deck is at the planner's ${MAX_DECK_SIZE}-card capacity.`, kind: "info" });
+  }
+  if (duplicateCards > 0) {
+    checks.push({
+      text: `${duplicateCards} extra cop${duplicateCards === 1 ? "y" : "ies"} across ${count - uniqueCards} repeated spell${count - uniqueCards === 1 ? "" : "s"}; repeats are tracked, not treated as rule violations.`,
+      kind: "info"
+    });
+  }
+
+  for (const check of checks) {
+    const item = document.createElement("li");
+    item.className = `validation-item validation-${check.kind}`;
+    item.textContent = check.text;
+    validationList.append(item);
+  }
 }
 
 function render() {
@@ -425,6 +474,7 @@ function render() {
   renderCatalog();
   renderDeck();
   renderStats();
+  renderValidation();
   renderAnalysis();
   renderHand();
   saveDeck();
@@ -432,7 +482,19 @@ function render() {
 
 schoolFilter.addEventListener("change", renderCatalog);
 typeFilter.addEventListener("change", renderCatalog);
+rankFilter.addEventListener("change", renderCatalog);
+pipFilter.addEventListener("change", renderCatalog);
+sortFilter.addEventListener("change", renderCatalog);
 spellSearch.addEventListener("input", renderCatalog);
+document.querySelector("#clear-filters").addEventListener("click", () => {
+  schoolFilter.value = "All Schools";
+  typeFilter.value = "All Types";
+  rankFilter.value = "all";
+  pipFilter.value = "all";
+  sortFilter.value = "catalog";
+  spellSearch.value = "";
+  renderCatalog();
+});
 deckPicker.addEventListener("change", () => {
   workspace.activeDeckId = deckPicker.value;
   loadActiveDeck();
@@ -544,6 +606,34 @@ document.querySelector("#export-backup").addEventListener("click", () => {
   setWorkspaceStatus(`Exported ${workspace.decks.length} deck${workspace.decks.length === 1 ? "" : "s"} to a JSON backup.`);
 });
 
+document.querySelector("#share-deck").addEventListener("click", async () => {
+  const record = activeDeckRecord();
+  const shareData = {
+    format: "wizard101-deck-builder-share",
+    version: 1,
+    name: record.name,
+    encounter: record.encounter,
+    notes: record.notes,
+    spellIds: deck.map((spell) => spell.id)
+  };
+  const shareUrl = new URL(window.location.href);
+  shareUrl.searchParams.set("share", JSON.stringify(shareData));
+
+  if (!navigator.clipboard?.writeText) {
+    window.prompt("Copy this link to share the current deck:", shareUrl.toString());
+    setWorkspaceStatus("Share link opened in a dialog for copying.");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(shareUrl.toString());
+    setWorkspaceStatus("Share link copied. Opening it adds this deck to the recipient's workspace.");
+  } catch (error) {
+    console.error("Could not copy the share link to the clipboard.", error);
+    window.prompt("Clipboard access failed. Copy this link to share the current deck:", shareUrl.toString());
+    setWorkspaceStatus("Clipboard access failed; the share link is available in the dialog.", true);
+  }
+});
+
 const backupFile = document.querySelector("#backup-file");
 document.querySelector("#import-backup").addEventListener("click", () => backupFile.click());
 backupFile.addEventListener("change", async () => {
@@ -592,6 +682,45 @@ backupFile.addEventListener("change", async () => {
   }
 });
 
+function restoreSharedDeckFromUrl() {
+  const url = new URL(window.location.href);
+  const payload = url.searchParams.get("share");
+  if (!payload) return;
+
+  try {
+    if (payload.length > 10000) {
+      throw new Error("The shared deck link is too large to load.");
+    }
+    const shared = JSON.parse(payload);
+    if (
+      !shared ||
+      shared.format !== "wizard101-deck-builder-share" ||
+      shared.version !== 1 ||
+      !Array.isArray(shared.spellIds) ||
+      shared.spellIds.length > MAX_DECK_SIZE ||
+      !shared.spellIds.every((id) => typeof id === "string" && spells.some((spell) => spell.id === id))
+    ) {
+      throw new Error("This link does not contain a valid Wizard101 deck.");
+    }
+
+    const record = createDeckRecord(
+      typeof shared.name === "string" && shared.name.trim() ? shared.name.trim().slice(0, 48) : "Shared deck",
+      [...shared.spellIds]
+    );
+    record.encounter = typeof shared.encounter === "string" ? shared.encounter.slice(0, 64) : "";
+    record.notes = typeof shared.notes === "string" ? shared.notes.slice(0, 500) : "";
+    workspace.decks.push(record);
+    workspace.activeDeckId = record.id;
+    setWorkspaceStatus(`Added shared deck "${record.name}" to this browser.`);
+  } catch (error) {
+    console.error("Could not load the shared deck link.", error);
+    setWorkspaceStatus(error instanceof SyntaxError ? "The shared deck link is malformed." : error.message, true);
+  } finally {
+    url.searchParams.delete("share");
+    window.history.replaceState(null, "", url);
+  }
+}
+
 document.querySelector("#draw-hand").addEventListener("click", () => {
   const shuffled = deck.map((spell, instanceId) => ({ spell, instanceId }));
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
@@ -617,6 +746,7 @@ mulliganButton.addEventListener("click", () => {
 });
 
 restoreWorkspace();
+restoreSharedDeckFromUrl();
 loadActiveDeck();
 render();
 
