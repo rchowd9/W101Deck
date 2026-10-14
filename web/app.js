@@ -325,15 +325,36 @@ function formatSpellDamage(spell) {
   return "No direct damage";
 }
 
+function matchesPipFilter(spell, selectedPipCost) {
+  if (selectedPipCost === "all") return true;
+  if (selectedPipCost === "variable") return Boolean(spell.variablePipCost);
+  if (selectedPipCost === "shadow") return Boolean(spell.shadowPipCost);
+  if (spell.variablePipCost || spell.shadowPipCost) return false;
+  return selectedPipCost === "5"
+    ? spell.pipCost >= 5
+    : spell.pipCost === Number(selectedPipCost);
+}
+
 function renderCatalog() {
   const selectedSchool = schoolFilter.value;
   const selectedType = typeFilter.value;
+  const selectedRank = rankFilter.value;
+  const selectedPipCost = pipFilter.value;
   const searchTerm = spellSearch.value.trim().toLowerCase();
   const availableSpells = spells.filter((spell) =>
     (selectedSchool === "All Schools" || spell.school === selectedSchool) &&
     (selectedType === "All Types" || spell.type === selectedType) &&
+    (selectedRank === "all" || (selectedRank === "9" ? spell.rank >= 9 : spell.rank === Number(selectedRank))) &&
+    matchesPipFilter(spell, selectedPipCost) &&
     `${spell.name} ${spell.school} ${spell.type} rank ${spell.rank} ${spell.description}`.toLowerCase().includes(searchTerm)
   );
+  if (sortFilter.value === "name") {
+    availableSpells.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sortFilter.value === "rank") {
+    availableSpells.sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
+  } else if (sortFilter.value === "pips") {
+    availableSpells.sort((a, b) => a.pipCost - b.pipCost || a.rank - b.rank || a.name.localeCompare(b.name));
+  }
 
   catalog.replaceChildren();
   noResults.hidden = availableSpells.length > 0;
@@ -363,11 +384,15 @@ function renderCatalog() {
     const cost = document.createElement("span");
     cost.className = "pip-cost";
     cost.textContent = formatSpellCost(spell);
+    const ownedCount = deck.reduce((count, selectedSpell) => count + (selectedSpell.id === spell.id ? 1 : 0), 0);
+    const inDeck = document.createElement("span");
+    inDeck.className = "in-deck-count";
+    inDeck.textContent = `In deck: ${ownedCount}`;
 
     const addButton = document.createElement("button");
     addButton.className = "button button-primary";
     addButton.type = "button";
-    addButton.textContent = "Add to deck";
+    addButton.textContent = ownedCount > 0 ? "Add another" : "Add to deck";
     addButton.disabled = deck.length >= MAX_DECK_SIZE;
     addButton.addEventListener("click", () => {
       if (deck.length < MAX_DECK_SIZE) {
@@ -377,7 +402,7 @@ function renderCatalog() {
       }
     });
 
-    footer.append(cost, addButton);
+    footer.append(cost, inDeck, addButton);
     card.append(school, name, metadata, description, footer);
     catalog.append(card);
   }
