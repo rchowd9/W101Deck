@@ -15,12 +15,15 @@ version and character.
 This repository contains a JavaFX desktop app and a separate static web edition.
 Both let you filter the sample spell catalog, add and remove cards, track deck
 size up to 64 cards, and reset the deck. The web edition also provides spell
-and spell-type search, multiple browser-local deck workspaces with encounter
-notes, deck composition and pip-curve analysis, an opening-hand and mulligan
-simulator, text export, portable JSON workspace backups, a school guide with
-deck-planning tips for every school, and an offline-ready installable shell. Its
-sample catalog includes higher-rank spells and Shadow transformations; verify
-current in-game details before use.
+and spell-type search, rank and pip-cost filters, sorting, multiple
+browser-local deck workspaces with encounter notes, advisory opening-hand
+readiness checks, deck composition and pip-curve analysis, an opening-hand and
+mulligan simulator, text export, portable JSON workspace backups, and shareable
+links for individual decks. It also includes a school guide with deck-planning
+tips for every school and an offline-ready installable shell. Shared links add
+a copy of the deck to the recipient's browser workspace; they do not sync later
+changes. Its sample catalog includes higher-rank spells and Shadow
+transformations; verify current in-game details before use.
 
 ## Run the JavaFX desktop app
 
