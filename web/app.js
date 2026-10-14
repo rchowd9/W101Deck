@@ -742,7 +742,11 @@ function restoreSharedDeckFromUrl() {
     setWorkspaceStatus(error instanceof SyntaxError ? "The shared deck link is malformed." : error.message, true);
   } finally {
     url.searchParams.delete("share");
-    window.history.replaceState(null, "", url);
+    try {
+      window.history.replaceState(null, "", url);
+    } catch (error) {
+      console.error("Could not remove the shared deck data from the address bar.", error);
+    }
   }
 }
 
