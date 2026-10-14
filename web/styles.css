@@ -352,6 +352,16 @@ textarea:focus {
   padding: 17px;
 }
 
+.spell-card {
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.spell-card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd7eb;
+  box-shadow: 0 12px 28px rgb(31 48 78 / 9%);
+}
+
 .school-tag {
   padding: 4px 8px;
   border-radius: 20px;
@@ -425,12 +435,25 @@ textarea:focus {
 }
 
 .spell-footer {
-  display: flex;
+  display: grid;
   width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 5px 8px;
   margin-top: auto;
   padding-top: 16px;
+}
+
+.spell-footer .in-deck-count {
+  grid-column: 1;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.spell-footer .button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  white-space: nowrap;
 }
 
 .pip-cost {
@@ -597,6 +620,48 @@ textarea:focus {
 .analysis-empty {
   color: var(--muted);
   font-size: 10px;
+}
+
+.validation-summary {
+  padding: 5px 8px;
+  border-radius: 20px;
+  color: #536178;
+  background: #eef1f6;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.validation-list {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.validation-item {
+  padding: 8px 10px;
+  border-left: 3px solid #829bd1;
+  border-radius: 4px;
+  color: #536178;
+  background: #f5f7fb;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.validation-success {
+  border-left-color: #4c9a70;
+  background: #eff8f2;
+}
+
+.validation-warning {
+  border-left-color: #c18a38;
+  background: #fbf6ec;
+}
+
+.validation-info {
+  border-left-color: #829bd1;
 }
 
 .simulator .tool-heading {
