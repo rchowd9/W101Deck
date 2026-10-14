@@ -481,7 +481,7 @@ function renderValidation() {
   }
   if (duplicateCards > 0) {
     checks.push({
-      text: `${duplicateCards} extra cop${duplicateCards === 1 ? "y" : "ies"} across ${count - uniqueCards} repeated spell${count - uniqueCards === 1 ? "" : "s"}; repeats are tracked, not treated as rule violations.`,
+      text: `${duplicateCards} extra cop${duplicateCards === 1 ? "y" : "ies"} of spells; repeats are tracked, not treated as rule violations.`,
       kind: "info"
     });
   }
