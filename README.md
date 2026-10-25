@@ -1,10 +1,10 @@
 # Wizard101 Deck Builder
 
 The JavaFX desktop app includes a spell deck builder with local deck
-saving/export, a pet talent pool calculator, a per-character crafting and
-reagent tracker, and a world progression checklist. Planner records are stored
-in a local SQLite database at `~/.wizard101-deck-builder/planner.db`; no game
-account is needed.
+saving/export, live spell catalog search, a deck-updating pip curve, a pet
+talent pool calculator, a per-character crafting and reagent tracker, and a
+world progression checklist. Planner records are stored in a local SQLite
+database at `~/.wizard101-deck-builder/planner.db`; no game account is needed.
 
 The pet calculator uses an explicitly illustrative independent-chance model
 based on the percentages entered for each parent; it does not claim to reproduce

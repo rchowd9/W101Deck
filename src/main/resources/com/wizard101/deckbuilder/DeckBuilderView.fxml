@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -20,6 +21,18 @@
                 <Separator/>
                 <Label fx:id="cardCountLabel" text="Total Cards: 0 / 64"/>
                 <Label fx:id="avgPipLabel" text="Avg Pip Cost: 0.0"/>
+            </VBox>
+
+            <VBox spacing="6" styleClass="battle-card">
+                <Label text="Pip curve" styleClass="section-title"/>
+                <BarChart fx:id="pipCurveChart" animated="false" legendVisible="false" prefHeight="180">
+                    <xAxis>
+                        <CategoryAxis fx:id="pipCostAxis" label="Pip cost"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis fx:id="pipCountAxis" label="Cards" forceZeroInRange="true"/>
+                    </yAxis>
+                </BarChart>
             </VBox>
 
             <VBox spacing="8">
@@ -47,6 +60,7 @@
     <center>
         <VBox spacing="10" styleClass="content-panel">
             <Label text="Available Spells" styleClass="section-title"/>
+            <TextField fx:id="catalogSearchField" promptText="Search spells, schools, or effects..."/>
             <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="list-scroll">
                 <TilePane fx:id="catalogTilePane" hgap="10" vgap="10" prefColumns="2" styleClass="card-grid"/>
             </ScrollPane>
