@@ -13,6 +13,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
@@ -28,6 +32,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -37,6 +42,7 @@ public class DeckBuilderController {
     @FXML private Label cardCountLabel;
     @FXML private Label avgPipLabel;
     @FXML private Label analysisSummaryLabel;
+    @FXML private TextField catalogSearchField;
     @FXML private ComboBox<String> schoolFilter;
     @FXML private ComboBox<String> savedDeckSelector;
     @FXML private TextField deckNameField;
@@ -47,6 +53,9 @@ public class DeckBuilderController {
     @FXML private TilePane handTilePane;
     @FXML private Button mulliganButton;
     @FXML private VBox analysisBox;
+    @FXML private BarChart<String, Number> pipCurveChart;
+    @FXML private CategoryAxis pipCostAxis;
+    @FXML private NumberAxis pipCountAxis;
 
     private static final int MAX_DECK_SIZE = 64;
     private final Deck deck = new Deck(MAX_DECK_SIZE);
@@ -61,6 +70,8 @@ public class DeckBuilderController {
         schoolFilter.getItems().addAll(
                 "All Schools", "Fire", "Ice", "Storm", "Myth", "Life", "Death", "Balance");
         schoolFilter.getSelectionModel().selectFirst();
+        catalogSearchField.textProperty().addListener(
+                (observable, oldValue, newValue) -> refreshCatalog());
         refreshCatalog();
         updateDeckStats();
         updateDeckAnalysis();
@@ -266,9 +277,16 @@ public class DeckBuilderController {
     private void refreshCatalog() {
         catalogTilePane.getChildren().clear();
         String selectedSchool = schoolFilter.getValue();
+        String searchTerm = catalogSearchField.getText().trim().toLowerCase(Locale.ROOT);
 
         for (Card card : cardDatabase.getAllSpells()) {
             if (!"All Schools".equals(selectedSchool) && !card.getSchool().equals(selectedSchool)) {
+                continue;
+            }
+            if (!searchTerm.isEmpty()
+                    && !card.getName().toLowerCase(Locale.ROOT).contains(searchTerm)
+                    && !card.getSchool().toLowerCase(Locale.ROOT).contains(searchTerm)
+                    && !card.getDescription().toLowerCase(Locale.ROOT).contains(searchTerm)) {
                 continue;
             }
             catalogTilePane.getChildren().add(createSpellCard(card));
@@ -322,6 +340,36 @@ public class DeckBuilderController {
     private void updateDeckStats() {
         cardCountLabel.setText("Total Cards: " + deck.getSize() + " / " + MAX_DECK_SIZE);
         avgPipLabel.setText(String.format("Avg Pip Cost: %.1f", deck.getAveragePipCost()));
+        updatePipCurve();
+    }
+
+    private void updatePipCurve() {
+        Map<Integer, Integer> pipCounts = new LinkedHashMap<>();
+        int highestPipCost = 4;
+        for (Card card : deck.getCards()) {
+            pipCounts.merge(card.getPipCost(), 1, Integer::sum);
+            highestPipCost = Math.max(highestPipCost, card.getPipCost());
+        }
+
+        List<String> pipCosts = new ArrayList<>();
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        int highestCount = 0;
+        for (int pipCost = 0; pipCost <= highestPipCost; pipCost++) {
+            int count = pipCounts.getOrDefault(pipCost, 0);
+            pipCosts.add(String.valueOf(pipCost));
+            series.getData().add(new XYChart.Data<>(String.valueOf(pipCost), count));
+            highestCount = Math.max(highestCount, count);
+        }
+
+        pipCurveChart.getData().setAll(series);
+        pipCostAxis.setCategories(FXCollections.observableArrayList(pipCosts));
+        pipCountAxis.setAutoRanging(false);
+        pipCountAxis.setLowerBound(0);
+        pipCountAxis.setUpperBound(Math.max(1, highestCount));
+        pipCountAxis.setTickUnit(Math.max(1, Math.ceil(Math.max(1, highestCount) / 4.0)));
+        pipCurveChart.setTitle(deck.getCards().isEmpty()
+                ? "Add cards to see your pip curve" : "Cards by pip cost");
+        pipCurveChart.setAccessibleText("Deck pip curve: " + pipCounts);
     }
 
     private void updateDeckAnalysis() {
