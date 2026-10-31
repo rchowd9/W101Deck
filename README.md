@@ -23,7 +23,9 @@ links for individual decks. It also includes a school guide with deck-planning
 tips for every school and an offline-ready installable shell. Shared links add
 a copy of the deck to the recipient's browser workspace; they do not sync later
 changes. Its sample catalog includes higher-rank spells and Shadow
-transformations; verify current in-game details before use.
+transformations, plus a wider set of language-inspired examples such as Java,
+Python, TypeScript, C#, Go, and Rust to make the project feel more varied and
+interesting.
 
 ## Run the JavaFX desktop app
 
