@@ -343,6 +343,7 @@ public class DeckBuilderController {
         updatePipCurve();
     }
 
+    @SuppressWarnings("unchecked")
     private void updatePipCurve() {
         Map<Integer, Integer> pipCounts = new LinkedHashMap<>();
         int highestPipCost = 4;
