@@ -391,17 +391,42 @@ public class DeckBuilderController {
 
     private void updateDeckAnalysis() {
         analysisBox.getChildren().clear();
+        int uniqueCards = (int) deck.getCards().stream().map(Card::getName).distinct().count();
+        int duplicateCards = deck.getCards().size() - uniqueCards;
+        analysisSummaryLabel.setText(uniqueCards + " unique · " + duplicateCards + " duplicate" + (duplicateCards == 1 ? "" : "s"));
+
+        Map<Card.Role, Integer> roleCounts = new LinkedHashMap<>();
+        for (Card card : deck.getCards()) {
+            roleCounts.merge(card.getRole(), 1, Integer::sum);
+        }
+
+        Label recommendationsTitle = new Label("Recommended card mix");
+        recommendationsTitle.getStyleClass().add("section-title");
+        analysisBox.getChildren().add(recommendationsTitle);
+        addAnalysisRow("AoE", roleCounts.getOrDefault(Card.Role.AREA_OF_EFFECT, 0), "2-3");
+        addAnalysisRow("Damage enchants", roleCounts.getOrDefault(Card.Role.DAMAGE_ENCHANT, 0), "1-2");
+        addAnalysisRow("Single-target hits", roleCounts.getOrDefault(Card.Role.SINGLE_TARGET, 0), "1-2");
+        addAnalysisRow("Feint", roleCounts.getOrDefault(Card.Role.FEINT, 0), "at least 1");
+        int healingAndShields = roleCounts.getOrDefault(Card.Role.HEALING, 0)
+                + roleCounts.getOrDefault(Card.Role.SHIELD, 0);
+        addAnalysisRow("Healing or shield", healingAndShields, "at least 1");
+        addAnalysisRow("Cleanses", roleCounts.getOrDefault(Card.Role.CLEANSE, 0), "as needed");
+
+        Label gearAdvice = new Label(
+                "Gear and pet: consider damage or survival pet talents and a Blade or Feint amulet.");
+        gearAdvice.setWrapText(true);
+        gearAdvice.getStyleClass().add("muted-text");
+        analysisBox.getChildren().add(gearAdvice);
+
+        Label schoolTitle = new Label("Cards by school");
+        schoolTitle.getStyleClass().add("section-title");
+        analysisBox.getChildren().add(schoolTitle);
         if (deck.getCards().isEmpty()) {
-            analysisSummaryLabel.setText("0 unique · 0 duplicates");
-            Label empty = new Label("Add cards to see this breakdown.");
+            Label empty = new Label("Add cards to see the school breakdown.");
             empty.getStyleClass().add("muted-text");
             analysisBox.getChildren().add(empty);
             return;
         }
-
-        int uniqueCards = (int) deck.getCards().stream().map(Card::getName).distinct().count();
-        int duplicateCards = deck.getCards().size() - uniqueCards;
-        analysisSummaryLabel.setText(uniqueCards + " unique · " + duplicateCards + " duplicate" + (duplicateCards == 1 ? "" : "s"));
 
         Map<String, Integer> schoolCounts = new LinkedHashMap<>();
         for (Card card : deck.getCards()) {
@@ -409,13 +434,17 @@ public class DeckBuilderController {
         }
 
         for (Map.Entry<String, Integer> entry : schoolCounts.entrySet()) {
-            HBox row = new HBox(8);
-            Label school = new Label(entry.getKey());
-            Label count = new Label(String.valueOf(entry.getValue()));
-            school.setMinWidth(120);
-            count.setMinWidth(32);
-            row.getChildren().addAll(school, count);
-            analysisBox.getChildren().add(row);
+            addAnalysisRow(entry.getKey(), entry.getValue(), "");
         }
+    }
+
+    private void addAnalysisRow(String label, int count, String target) {
+        HBox row = new HBox(8);
+        Label category = new Label(label);
+        Label value = new Label(target.isEmpty() ? String.valueOf(count) : count + " / " + target);
+        category.setMinWidth(120);
+        value.setMinWidth(32);
+        row.getChildren().addAll(category, value);
+        analysisBox.getChildren().add(row);
     }
 }
