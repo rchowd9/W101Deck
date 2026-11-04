@@ -60,6 +60,7 @@ public final class PlannerRepository {
                     school TEXT NOT NULL,
                     pip_cost INTEGER NOT NULL,
                     description TEXT NOT NULL,
+                    role TEXT NOT NULL DEFAULT 'OTHER',
                     PRIMARY KEY (deck_id, position)
                 )
                 """,
@@ -102,8 +103,28 @@ public final class PlannerRepository {
             for (String sql : statements) {
                 statement.execute(sql);
             }
+            ensureDeckCardRoleColumn(connection);
         } catch (SQLException exception) {
             throw new IllegalStateException("Could not initialize the local planner database.", exception);
+        }
+    }
+
+    private void ensureDeckCardRoleColumn(Connection connection) throws SQLException {
+        boolean hasRoleColumn = false;
+        try (Statement statement = connection.createStatement();
+             ResultSet columns = statement.executeQuery("PRAGMA table_info(saved_deck_cards)")) {
+            while (columns.next()) {
+                if ("role".equals(columns.getString("name"))) {
+                    hasRoleColumn = true;
+                    break;
+                }
+            }
+        }
+        if (!hasRoleColumn) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("ALTER TABLE saved_deck_cards "
+                        + "ADD COLUMN role TEXT NOT NULL DEFAULT 'OTHER'");
+            }
         }
     }
 
@@ -134,8 +155,8 @@ public final class PlannerRepository {
                     delete.executeUpdate();
                 }
                 try (PreparedStatement insertCard = connection.prepareStatement(
-                        "INSERT INTO saved_deck_cards(deck_id, position, name, school, pip_cost, description) "
-                                + "VALUES (?, ?, ?, ?, ?, ?)")) {
+                        "INSERT INTO saved_deck_cards(deck_id, position, name, school, pip_cost, description, role) "
+                                + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
                     for (int index = 0; index < cards.size(); index++) {
                         Card card = cards.get(index);
                         insertCard.setLong(1, deckId);
@@ -144,6 +165,7 @@ public final class PlannerRepository {
                         insertCard.setString(4, card.getSchool());
                         insertCard.setInt(5, card.getPipCost());
                         insertCard.setString(6, card.getDescription());
+                        insertCard.setString(7, card.getRole().name());
                         insertCard.addBatch();
                     }
                     insertCard.executeBatch();
@@ -173,7 +195,7 @@ public final class PlannerRepository {
     public List<Card> loadDeck(String name) throws SQLException {
         List<Card> cards = new ArrayList<>();
         String sql = """
-                SELECT c.name, c.school, c.pip_cost, c.description
+                SELECT c.name, c.school, c.pip_cost, c.description, c.role
                 FROM saved_deck_cards c
                 JOIN saved_decks d ON d.id = c.deck_id
                 WHERE d.name = ?
@@ -184,7 +206,8 @@ public final class PlannerRepository {
             try (ResultSet results = statement.executeQuery()) {
                 while (results.next()) {
                     cards.add(new Card(results.getString("name"), results.getString("school"),
-                            results.getInt("pip_cost"), results.getString("description")));
+                            results.getInt("pip_cost"), results.getString("description"),
+                            Card.Role.valueOf(results.getString("role"))));
                 }
             }
         }
