@@ -174,6 +174,7 @@ public class DeckBuilderController {
         for (Card card : deck.getCards()) {
             export.append(card.getName()).append(" | ").append(card.getSchool())
                     .append(" | ").append(card.getPipCost()).append(" pips")
+                    .append(" | ").append(card.getRole().getDisplayName())
                     .append(" | ").append(card.getDescription()).append('\n');
         }
         try {
@@ -246,7 +247,8 @@ public class DeckBuilderController {
             handCard.getStyleClass().add("hand-card");
             Label name = new Label(card.getName());
             name.getStyleClass().add("spell-name");
-            Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips");
+            Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips"
+                    + "  |  " + card.getRole().getDisplayName());
             CheckBox mulliganCheck = new CheckBox("Mulligan");
             mulliganCheck.setSelected(mulliganIndexes.contains(cardIndex));
             mulliganCheck.selectedProperty().addListener((observable, oldValue, newValue) -> {
