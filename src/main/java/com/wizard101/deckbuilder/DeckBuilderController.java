@@ -44,6 +44,7 @@ public class DeckBuilderController {
     @FXML private Label analysisSummaryLabel;
     @FXML private TextField catalogSearchField;
     @FXML private ComboBox<String> schoolFilter;
+    @FXML private ComboBox<String> roleFilter;
     @FXML private ComboBox<String> savedDeckSelector;
     @FXML private TextField deckNameField;
     @FXML private TextField encounterField;
@@ -68,8 +69,15 @@ public class DeckBuilderController {
     @FXML
     public void initialize() {
         schoolFilter.getItems().addAll(
-                "All Schools", "Fire", "Ice", "Storm", "Myth", "Life", "Death", "Balance");
+                "All Schools", "Fire", "Ice", "Storm", "Myth", "Life", "Death", "Balance", "Sun");
         schoolFilter.getSelectionModel().selectFirst();
+        roleFilter.getItems().add("All Roles");
+        for (Card.Role role : Card.Role.values()) {
+            if (role != Card.Role.OTHER) {
+                roleFilter.getItems().add(role.getDisplayName());
+            }
+        }
+        roleFilter.getSelectionModel().selectFirst();
         catalogSearchField.textProperty().addListener(
                 (observable, oldValue, newValue) -> refreshCatalog());
         refreshCatalog();
@@ -277,15 +285,21 @@ public class DeckBuilderController {
     private void refreshCatalog() {
         catalogTilePane.getChildren().clear();
         String selectedSchool = schoolFilter.getValue();
+        String selectedRole = roleFilter.getValue();
         String searchTerm = catalogSearchField.getText().trim().toLowerCase(Locale.ROOT);
 
         for (Card card : cardDatabase.getAllSpells()) {
             if (!"All Schools".equals(selectedSchool) && !card.getSchool().equals(selectedSchool)) {
                 continue;
             }
+            if (!"All Roles".equals(selectedRole)
+                    && !card.getRole().getDisplayName().equals(selectedRole)) {
+                continue;
+            }
             if (!searchTerm.isEmpty()
                     && !card.getName().toLowerCase(Locale.ROOT).contains(searchTerm)
                     && !card.getSchool().toLowerCase(Locale.ROOT).contains(searchTerm)
+                    && !card.getRole().getDisplayName().toLowerCase(Locale.ROOT).contains(searchTerm)
                     && !card.getDescription().toLowerCase(Locale.ROOT).contains(searchTerm)) {
                 continue;
             }
@@ -298,7 +312,8 @@ public class DeckBuilderController {
         spellCard.getStyleClass().add("spell-card");
         Label name = new Label(card.getName());
         name.getStyleClass().add("spell-name");
-        Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips");
+        Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips"
+                + "  |  " + card.getRole().getDisplayName());
         Label description = new Label(card.getDescription());
         description.setWrapText(true);
         Button addButton = new Button("Add to deck");
@@ -323,7 +338,8 @@ public class DeckBuilderController {
             deckCard.getStyleClass().add("deck-card");
             Label name = new Label(card.getName());
             name.getStyleClass().add("spell-name");
-            Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips");
+            Label details = new Label(card.getSchool() + "  |  " + card.getPipCost() + " pips"
+                    + "  |  " + card.getRole().getDisplayName());
             Button removeButton = new Button("Remove");
             removeButton.setOnAction(event -> {
                 deck.removeCard(card);
