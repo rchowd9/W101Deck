@@ -52,6 +52,7 @@
                 <Label text="Filter spells" styleClass="section-title"/>
                 <Separator/>
                 <ComboBox fx:id="schoolFilter" onAction="#handleSchoolFilter" maxWidth="Infinity"/>
+                <ComboBox fx:id="roleFilter" onAction="#handleSchoolFilter" maxWidth="Infinity"/>
                 <Button text="Reset deck" onAction="#handleResetDeck" maxWidth="Infinity"/>
             </VBox>
         </VBox>
