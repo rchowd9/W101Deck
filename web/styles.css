@@ -508,6 +508,10 @@ textarea:focus {
   border-radius: 8px;
 }
 
+.deck-card > div {
+  min-width: 0;
+}
+
 .deck-card h3 {
   margin: 0;
   font-size: 12px;
@@ -517,6 +521,22 @@ textarea:focus {
   margin-top: 4px;
   color: var(--muted);
   font-size: 10px;
+}
+
+.key-card-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  color: #536178;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.key-card-toggle input {
+  width: auto;
+  margin: 0;
+  accent-color: var(--blue);
 }
 
 .remove-button {
@@ -617,6 +637,45 @@ textarea:focus {
 .analysis-empty {
   color: var(--muted);
   font-size: 10px;
+}
+
+.coverage-list,
+.synergy-list,
+.consistency-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.insight-item {
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  border-left: 3px solid #829bd1;
+  border-radius: 4px;
+  color: #536178;
+  background: #f5f7fb;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.insight-item strong {
+  color: var(--navy);
+  font-size: 10px;
+}
+
+.insight-success {
+  border-left-color: #4c9a70;
+  background: #eff8f2;
+}
+
+.insight-warning {
+  border-left-color: #c18a38;
+  background: #fbf6ec;
+}
+
+.insight-info {
+  border-left-color: #829bd1;
 }
 
 .validation-summary {

@@ -20,12 +20,13 @@ Both let you filter the sample spell catalog, add and remove cards, track deck
 size up to 64 cards, and reset the deck. The web edition also provides spell
 and spell-type search, rank and pip-cost filters, sorting, multiple
 browser-local deck workspaces with encounter notes, advisory opening-hand
-readiness checks, deck composition and pip-curve analysis, an opening-hand and
-mulligan simulator, text export, portable JSON workspace backups, and shareable
-links for individual decks. It also includes a school guide with deck-planning
-tips for every school and an offline-ready installable shell. Shared links add
-a copy of the deck to the recipient's browser workspace; they do not sync later
-changes. Its sample catalog includes higher-rank spells and Shadow
+readiness checks, deck composition and pip-curve analysis, spell coverage and
+effect-synergy checks, key-card opening-hand odds with observed draw counts, an
+opening-hand and mulligan simulator, text export, portable JSON workspace
+backups, and shareable links for individual decks. It also includes a school
+guide with deck-planning tips for every school and an offline-ready installable
+shell. Shared links add a copy of the deck to the recipient's browser workspace;
+they do not sync later changes. Its sample catalog includes higher-rank spells and Shadow
 transformations, plus a wider set of language-inspired examples such as Java,
 Python, TypeScript, C#, Go, and Rust to make the project feel more varied and
 interesting.
