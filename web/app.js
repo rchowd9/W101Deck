@@ -571,6 +571,7 @@ function renderCatalog() {
       if (deck.length < MAX_DECK_SIZE) {
         deck.push(spell);
         resetSimulator();
+        resetConsistencyStats();
         render();
       }
     });
@@ -734,6 +735,7 @@ document.querySelector("#duplicate-deck").addEventListener("click", () => {
   const duplicate = createDeckRecord(`${current.name} copy`, [...current.spellIds]);
   duplicate.encounter = current.encounter;
   duplicate.notes = current.notes;
+  duplicate.keySpellIds = validKeySpellIds(current.keySpellIds);
   workspace.decks.push(duplicate);
   workspace.activeDeckId = duplicate.id;
   loadActiveDeck();
@@ -774,6 +776,7 @@ document.querySelector("#reset-deck").addEventListener("click", () => {
   if (deck.length > 0 && !window.confirm(`Remove all cards from "${activeDeckRecord().name}"?`)) return;
   deck.length = 0;
   resetSimulator();
+  resetConsistencyStats();
   setWorkspaceStatus("The active deck has been cleared.");
   render();
 });
@@ -832,7 +835,8 @@ document.querySelector("#share-deck").addEventListener("click", async () => {
     name: record.name,
     encounter: record.encounter,
     notes: record.notes,
-    spellIds: deck.map((spell) => spell.id)
+    spellIds: deck.map((spell) => spell.id),
+    keySpellIds: [...keySpellIds]
   };
   const shareUrl = new URL(window.location.href);
   shareUrl.searchParams.set("share", JSON.stringify(shareData));
@@ -878,6 +882,8 @@ backupFile.addEventListener("change", async () => {
         ),
         encounter: typeof record.encounter === "string" ? record.encounter.slice(0, 64) : "",
         notes: typeof record.notes === "string" ? record.notes.slice(0, 500) : "",
+        keySpellIds: validKeySpellIds(record.keySpellIds),
+        openingHandStats: normalizeOpeningHandStats(record.openingHandStats),
         previousId: typeof record.id === "string" ? record.id : ""
       };
     });
@@ -925,6 +931,7 @@ function restoreSharedDeckFromUrl() {
       typeof shared.name === "string" && shared.name.trim() ? shared.name.trim().slice(0, 48) : "Shared deck",
       [...shared.spellIds]
     );
+    record.keySpellIds = validKeySpellIds(shared.keySpellIds);
     record.encounter = typeof shared.encounter === "string" ? shared.encounter.slice(0, 64) : "";
     record.notes = typeof shared.notes === "string" ? shared.notes.slice(0, 500) : "";
     workspace.decks.push(record);
