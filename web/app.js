@@ -232,6 +232,146 @@ function resetSimulator() {
   selectedMulligans.clear();
 }
 
+function resetConsistencyStats() {
+  openingHandStats = { trials: 0, appearances: {} };
+  const deckSpellIds = new Set(deck.map((spell) => spell.id));
+  keySpellIds = new Set([...keySpellIds].filter((id) => deckSpellIds.has(id)));
+}
+
+function spellHasEffect(spell, effect) {
+  return Array.isArray(spell.effects) && spell.effects.includes(effect);
+}
+
+function addInsight(container, title, description, kind) {
+  const item = document.createElement("div");
+  item.className = `insight-item insight-${kind}`;
+  const heading = document.createElement("strong");
+  heading.textContent = title;
+  const detail = document.createElement("span");
+  detail.textContent = description;
+  item.append(heading, detail);
+  container.append(item);
+}
+
+function renderCoverage() {
+  coverageList.replaceChildren();
+  const coverage = [
+    {
+      label: "Damage",
+      matches: deck.filter((spell) => typeof spell.damage === "number" && spell.damage > 0).length
+    },
+    {
+      label: "Healing",
+      matches: deck.filter((spell) => spell.type === "Healing" || spellHasEffect(spell, "healing")).length
+    },
+    {
+      label: "Shields / wards",
+      matches: deck.filter((spell) => spell.type === "Defense" || spellHasEffect(spell, "shield")).length
+    }
+  ];
+
+  for (const { label, matches } of coverage) {
+    addInsight(
+      coverageList,
+      `${label}: ${matches > 0 ? `${matches} card${matches === 1 ? "" : "s"}` : "missing"}`,
+      matches > 0 ? `Your deck has ${label.toLowerCase()} coverage.` : `Consider adding a ${label.toLowerCase()} spell.`,
+      matches > 0 ? "success" : "warning"
+    );
+  }
+}
+
+function renderSynergies() {
+  synergyList.replaceChildren();
+  const damageSpells = deck.filter((spell) => typeof spell.damage === "number" && spell.damage > 0);
+  const shieldSpells = deck.filter((spell) => spell.type === "Defense" || spellHasEffect(spell, "shield"));
+  const healingSpells = deck.filter((spell) => spell.type === "Healing" || spellHasEffect(spell, "healing"));
+  const trapSpells = deck.filter((spell) => spellHasEffect(spell, "trap"));
+  const damageOverTimeSpells = deck.filter((spell) => spellHasEffect(spell, "damage-over-time"));
+
+  if (trapSpells.length > 0 && damageSpells.length > 0) {
+    addInsight(
+      synergyList,
+      "Feint + damage",
+      "Feint places a damage trap on one enemy; follow with a hit to take advantage of it. Account for Feint's drawback on the caster.",
+      "success"
+    );
+  }
+  if (damageOverTimeSpells.length > 0 && shieldSpells.length > 0) {
+    addInsight(
+      synergyList,
+      "Damage over time + shield",
+      "A shield can help protect you while a damage-over-time effect ticks. The shield reduces incoming damage; it does not increase the spell's damage.",
+      "info"
+    );
+  }
+  if (damageSpells.length > 0 && shieldSpells.length > 0) {
+    addInsight(
+      synergyList,
+      "Damage + protection",
+      "Your damage spells provide offense while shields or wards help absorb incoming hits and buy time to cast. These effects serve different roles; shields do not boost outgoing damage.",
+      "info"
+    );
+  }
+  if (healingSpells.length > 0 && shieldSpells.length > 0) {
+    addInsight(
+      synergyList,
+      "Healing + protection",
+      "Healing restores health while shields or wards prevent some incoming damage, covering both recovery and prevention.",
+      "success"
+    );
+  }
+  if (synergyList.childElementCount === 0) {
+    addInsight(
+      synergyList,
+      "No interactions found yet",
+      "Add combinations such as Feint and a damage spell, damage over time and a shield, or healing and protection.",
+      "info"
+    );
+  }
+}
+
+function openingHandProbability(copyCount) {
+  const deckSize = deck.length;
+  const handSize = Math.min(7, deckSize);
+  if (deckSize === 0 || copyCount === 0 || handSize === 0) return 0;
+  if (deckSize - copyCount < handSize) return 100;
+
+  let probabilityOfMissing = 1;
+  for (let draw = 0; draw < handSize; draw += 1) {
+    probabilityOfMissing *= (deckSize - copyCount - draw) / (deckSize - draw);
+  }
+  return (1 - probabilityOfMissing) * 100;
+}
+
+function renderConsistencyMetrics() {
+  consistencyList.replaceChildren();
+  const keySpells = [...new Set(deck.filter((spell) => keySpellIds.has(spell.id)))];
+  if (keySpells.length === 0) {
+    addInsight(
+      consistencyList,
+      "No key cards selected",
+      "Use the Key card checkbox in your deck list to track a spell's chance of appearing in the opening hand.",
+      "info"
+    );
+    return;
+  }
+
+  for (const spell of keySpells) {
+    const copies = deck.filter((card) => card.id === spell.id).length;
+    const probability = openingHandProbability(copies);
+    const appearances = openingHandStats.appearances[spell.id] || 0;
+    const observed = openingHandStats.trials > 0
+      ? `${appearances}/${openingHandStats.trials} sampled hands`
+      : "No hands sampled yet";
+    addInsight(
+      consistencyList,
+      `${spell.name} · ${probability.toFixed(1)}% estimated`,
+      `${copies} deck ${copies === 1 ? "copy" : "copies"} · appeared in ${observed}.`,
+      "info"
+    );
+  }
+}
+
 function renderHand() {
   handList.replaceChildren();
   handEmpty.hidden = simulatedHand.length > 0;
@@ -534,6 +674,9 @@ function render() {
   renderStats();
   renderValidation();
   renderAnalysis();
+  renderCoverage();
+  renderSynergies();
+  renderConsistencyMetrics();
   renderHand();
   saveDeck();
 }
