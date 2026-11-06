@@ -4,19 +4,19 @@ const LEGACY_DECK_KEY = "wizard101-deck-builder";
 
 const spells = [
   { id: "fire-cat", name: "Fire Cat", school: "Fire", rank: 1, type: "Damage", pipCost: 1, damage: 16, description: "Single-target Fire damage." },
-  { id: "heckhound", name: "Heckhound", school: "Fire", rank: 3, type: "Damage", pipCost: 1, damage: 24, description: "Damage over time; its total damage scales with the pips invested." },
+  { id: "heckhound", name: "Heckhound", school: "Fire", rank: 3, type: "Damage", pipCost: 1, damage: 24, effects: ["damage-over-time"], description: "Damage over time; its total damage scales with the pips invested." },
   { id: "meteor-strike", name: "Meteor Strike", school: "Fire", rank: 4, type: "Damage", pipCost: 4, damage: 32, description: "Fire damage to all enemies." },
-  { id: "fire-dragon", name: "Fire Dragon", school: "Fire", rank: 7, type: "Damage", pipCost: 7, damage: 48, description: "Heavy Fire damage to all enemies, followed by damage over time." },
-  { id: "rain-of-fire", name: "Rain of Fire", school: "Fire", rank: 9, type: "Damage", pipCost: 9, damage: 58, description: "Powerful Fire damage to all enemies with a damage-over-time effect." },
+  { id: "fire-dragon", name: "Fire Dragon", school: "Fire", rank: 7, type: "Damage", pipCost: 7, damage: 48, effects: ["damage-over-time"], description: "Heavy Fire damage to all enemies, followed by damage over time." },
+  { id: "rain-of-fire", name: "Rain of Fire", school: "Fire", rank: 9, type: "Damage", pipCost: 9, damage: 58, effects: ["damage-over-time"], description: "Powerful Fire damage to all enemies with a damage-over-time effect." },
   { id: "frost-beetle", name: "Frost Beetle", school: "Ice", rank: 1, type: "Damage", pipCost: 1, damage: 18, description: "Single-target Ice damage." },
-  { id: "tower-shield", name: "Tower Shield", school: "Ice", rank: 2, type: "Defense", pipCost: 0, damage: 0, description: "Reduce the next incoming damage from any school." },
-  { id: "ice-colossus", name: "Ice Colossus", school: "Ice", rank: 5, type: "Damage", pipCost: 5, damage: 30, description: "Ice damage to one enemy and weaken its next attack." },
+  { id: "tower-shield", name: "Tower Shield", school: "Ice", rank: 2, type: "Defense", pipCost: 0, damage: 0, effects: ["shield"], description: "Reduce the next incoming damage from any school." },
+  { id: "ice-colossus", name: "Ice Colossus", school: "Ice", rank: 5, type: "Damage", pipCost: 5, damage: 30, effects: ["weakness"], description: "Ice damage to one enemy and weaken its next attack." },
   { id: "blizzard", name: "Blizzard", school: "Ice", rank: 6, type: "Damage", pipCost: 6, damage: 36, description: "Ice damage to all enemies." },
-  { id: "frost-giant", name: "Frost Giant", school: "Ice", rank: 7, type: "Damage", pipCost: 7, damage: 44, description: "Ice damage to all enemies and stun them." },
+  { id: "frost-giant", name: "Frost Giant", school: "Ice", rank: 7, type: "Damage", pipCost: 7, damage: 44, effects: ["stun"], description: "Ice damage to all enemies and stun them." },
   { id: "thunder-snake", name: "Thunder Snake", school: "Storm", rank: 1, type: "Damage", pipCost: 1, damage: 18, description: "Single-target Storm damage." },
   { id: "storm-shark", name: "Storm Shark", school: "Storm", rank: 3, type: "Damage", pipCost: 3, damage: 28, description: "Strong single-target Storm damage." },
   { id: "tempest", name: "Tempest", school: "Storm", rank: 4, type: "Damage", pipCost: 4, damage: 34, description: "Storm damage to all enemies; damage increases with pips invested." },
-  { id: "storm-lord", name: "Storm Lord", school: "Storm", rank: 7, type: "Damage", pipCost: 7, damage: 46, description: "Storm damage to all enemies and stun them." },
+  { id: "storm-lord", name: "Storm Lord", school: "Storm", rank: 7, type: "Damage", pipCost: 7, damage: 46, effects: ["stun"], description: "Storm damage to all enemies and stun them." },
   { id: "blood-bat", name: "Blood Bat", school: "Myth", rank: 1, type: "Damage", pipCost: 1, damage: 17, description: "Single-target Myth damage." },
   { id: "humongofrog", name: "Humongofrog", school: "Myth", rank: 4, type: "Damage", pipCost: 4, damage: 30, description: "Myth damage to all enemies." },
   { id: "orthus", name: "Orthrus", school: "Myth", rank: 7, type: "Damage", pipCost: 7, damage: 40, description: "Powerful Myth damage to one enemy." },
@@ -24,11 +24,11 @@ const spells = [
   { id: "imp", name: "Imp", school: "Life", rank: 1, type: "Healing", pipCost: 1, damage: 0, description: "Small heal to one ally." },
   { id: "satyr", name: "Satyr", school: "Life", rank: 4, type: "Healing", pipCost: 4, damage: 0, description: "Large heal to one ally." },
   { id: "forest-lord", name: "Forest Lord", school: "Life", rank: 8, type: "Damage", pipCost: 8, damage: 32, description: "Life damage to all enemies." },
-  { id: "rebirth", name: "Rebirth", school: "Life", rank: 8, type: "Healing", pipCost: 8, damage: 0, description: "Heal all allies and grant them a protective ward." },
+  { id: "rebirth", name: "Rebirth", school: "Life", rank: 8, type: "Healing", pipCost: 8, damage: 0, effects: ["shield"], description: "Heal all allies and grant them a protective ward." },
   { id: "banshee", name: "Banshee", school: "Death", rank: 3, type: "Damage", pipCost: 3, damage: 26, description: "Death damage to one enemy and weaken its next attack." },
-  { id: "vampire", name: "Vampire", school: "Death", rank: 4, type: "Damage", pipCost: 4, damage: 24, description: "Damage one enemy and return some of that damage as health." },
-  { id: "feint", name: "Feint", school: "Death", rank: 3, type: "Utility", pipCost: 1, damage: 0, description: "Place a large damage trap on one enemy, with a smaller drawback on the caster." },
-  { id: "scarecrow", name: "Scarecrow", school: "Death", rank: 7, type: "Damage", pipCost: 7, damage: 36, description: "Damage all enemies and restore health to the caster based on damage dealt." },
+  { id: "vampire", name: "Vampire", school: "Death", rank: 4, type: "Damage", pipCost: 4, damage: 24, effects: ["healing"], description: "Damage one enemy and return some of that damage as health." },
+  { id: "feint", name: "Feint", school: "Death", rank: 3, type: "Utility", pipCost: 1, damage: 0, effects: ["trap"], description: "Place a large damage trap on one enemy, with a smaller drawback on the caster." },
+  { id: "scarecrow", name: "Scarecrow", school: "Death", rank: 7, type: "Damage", pipCost: 7, damage: 36, effects: ["healing"], description: "Damage all enemies and restore health to the caster based on damage dealt." },
   { id: "scarab", name: "Scarab", school: "Balance", rank: 1, type: "Damage", pipCost: 1, damage: 18, description: "Single-target Balance damage." },
   { id: "sandstorm", name: "Sandstorm", school: "Balance", rank: 4, type: "Damage", pipCost: 4, damage: 27, description: "Balance damage to all enemies." },
   { id: "power-nova", name: "Power Nova", school: "Balance", rank: 5, type: "Damage", pipCost: 5, damage: 33, description: "Balance damage to all enemies and weaken their next attacks." },
@@ -45,6 +45,8 @@ let workspace = {
 let deck = [];
 let simulatedHand = [];
 let remainingCards = [];
+let keySpellIds = new Set();
+let openingHandStats = { trials: 0, appearances: {} };
 const selectedMulligans = new Set();
 const schoolFilter = document.querySelector("#school-filter");
 const typeFilter = document.querySelector("#type-filter");
@@ -72,6 +74,9 @@ const analysisSummary = document.querySelector("#analysis-summary");
 const analysisBreakdown = document.querySelector("#analysis-breakdown");
 const validationSummary = document.querySelector("#validation-summary");
 const validationList = document.querySelector("#validation-list");
+const coverageList = document.querySelector("#coverage-list");
+const synergyList = document.querySelector("#synergy-list");
+const consistencyList = document.querySelector("#consistency-list");
 const handList = document.querySelector("#hand-list");
 const handEmpty = document.querySelector("#hand-empty");
 const mulliganButton = document.querySelector("#mulligan-hand");
@@ -82,8 +87,23 @@ function createDeckRecord(name, spellIds = []) {
     name,
     encounter: "",
     notes: "",
-    spellIds
+    spellIds,
+    keySpellIds: [],
+    openingHandStats: { trials: 0, appearances: {} }
   };
+}
+
+function normalizeOpeningHandStats(stats) {
+  const trials = Number.isSafeInteger(stats?.trials) && stats.trials >= 0 ? stats.trials : 0;
+  const appearances = {};
+  if (stats?.appearances && typeof stats.appearances === "object" && !Array.isArray(stats.appearances)) {
+    for (const [id, count] of Object.entries(stats.appearances)) {
+      if (spells.some((spell) => spell.id === id) && Number.isSafeInteger(count) && count >= 0) {
+        appearances[id] = Math.min(count, trials);
+      }
+    }
+  }
+  return { trials, appearances };
 }
 
 function restoreWorkspace() {
