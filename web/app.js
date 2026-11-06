@@ -93,6 +93,12 @@ function createDeckRecord(name, spellIds = []) {
   };
 }
 
+function validKeySpellIds(ids) {
+  return Array.isArray(ids)
+    ? [...new Set(ids.filter((id) => typeof id === "string" && spells.some((spell) => spell.id === id)))]
+    : [];
+}
+
 function normalizeOpeningHandStats(stats) {
   const trials = Number.isSafeInteger(stats?.trials) && stats.trials >= 0 ? stats.trials : 0;
   const appearances = {};
@@ -138,7 +144,9 @@ function restoreWorkspace() {
         name: typeof record.name === "string" && record.name.trim() ? record.name.trim() : `Deck ${index + 1}`,
         encounter: typeof record.encounter === "string" ? record.encounter.slice(0, 64) : "",
         notes: typeof record.notes === "string" ? record.notes.slice(0, 500) : "",
-        spellIds: record.spellIds.filter((id) => typeof id === "string")
+        spellIds: record.spellIds.filter((id) => typeof id === "string"),
+        keySpellIds: validKeySpellIds(record.keySpellIds),
+        openingHandStats: normalizeOpeningHandStats(record.openingHandStats)
       }));
     if (restoredDecks.length === 0) {
       throw new Error("The saved workspace does not contain any valid decks.");
@@ -166,6 +174,7 @@ function loadActiveDeck() {
   selectedMulligans.clear();
   if (!record) return;
 
+  openingHandStats = normalizeOpeningHandStats(record.openingHandStats);
   for (const id of record.spellIds) {
     const spell = spells.find((candidate) => candidate.id === id);
     if (!spell) {
@@ -178,12 +187,16 @@ function loadActiveDeck() {
     }
     deck.push(spell);
   }
+  const deckSpellIds = new Set(deck.map((spell) => spell.id));
+  keySpellIds = new Set(validKeySpellIds(record.keySpellIds).filter((id) => deckSpellIds.has(id)));
 }
 
 function saveDeck() {
   const record = activeDeckRecord();
   if (!record) return;
   record.spellIds = deck.map((spell) => spell.id);
+  record.keySpellIds = [...keySpellIds];
+  record.openingHandStats = openingHandStats;
   try {
     localStorage.setItem(SAVED_DECK_KEY, JSON.stringify(workspace));
   } catch (error) {
