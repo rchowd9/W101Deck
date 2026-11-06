@@ -960,6 +960,12 @@ document.querySelector("#draw-hand").addEventListener("click", () => {
   simulatedHand = shuffled.slice(0, 7);
   remainingCards = shuffled.slice(simulatedHand.length);
   selectedMulligans.clear();
+  openingHandStats.trials += 1;
+  for (const id of new Set(simulatedHand.map((card) => card.spell.id))) {
+    openingHandStats.appearances[id] = (openingHandStats.appearances[id] || 0) + 1;
+  }
+  renderConsistencyMetrics();
+  saveDeck();
   renderHand();
 });
 
