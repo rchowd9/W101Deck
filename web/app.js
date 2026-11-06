@@ -594,7 +594,23 @@ function renderDeck() {
     name.textContent = spell.name;
     const meta = document.createElement("p");
     meta.textContent = `${spell.school} · Rank ${spell.rank} · ${formatSpellCost(spell)}${typeof spell.damage === "number" && spell.damage > 0 ? ` · ${formatSpellDamage(spell)}` : ""}`;
-    details.append(name, meta);
+    const keyLabel = document.createElement("label");
+    keyLabel.className = "key-card-toggle";
+    const keyToggle = document.createElement("input");
+    keyToggle.type = "checkbox";
+    keyToggle.checked = keySpellIds.has(spell.id);
+    keyToggle.setAttribute("aria-label", `Track ${spell.name} as a key card`);
+    keyToggle.addEventListener("change", () => {
+      if (keyToggle.checked) {
+        keySpellIds.add(spell.id);
+      } else {
+        keySpellIds.delete(spell.id);
+      }
+      renderConsistencyMetrics();
+      saveDeck();
+    });
+    keyLabel.append(keyToggle, document.createTextNode("Key card"));
+    details.append(name, meta, keyLabel);
 
     const removeButton = document.createElement("button");
     removeButton.className = "remove-button";
@@ -604,6 +620,7 @@ function renderDeck() {
     removeButton.addEventListener("click", () => {
       deck.splice(index, 1);
       resetSimulator();
+      resetConsistencyStats();
       render();
     });
 
