@@ -604,12 +604,16 @@ function renderDeck() {
     const keyToggle = document.createElement("input");
     keyToggle.type = "checkbox";
     keyToggle.checked = keySpellIds.has(spell.id);
+    keyToggle.dataset.spellId = spell.id;
     keyToggle.setAttribute("aria-label", `Track ${spell.name} as a key card`);
     keyToggle.addEventListener("change", () => {
       if (keyToggle.checked) {
         keySpellIds.add(spell.id);
       } else {
         keySpellIds.delete(spell.id);
+      }
+      for (const toggle of deckList.querySelectorAll(".key-card-toggle input")) {
+        toggle.checked = keySpellIds.has(toggle.dataset.spellId);
       }
       renderConsistencyMetrics();
       saveDeck();
