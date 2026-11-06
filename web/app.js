@@ -255,6 +255,10 @@ function addInsight(container, title, description, kind) {
 
 function renderCoverage() {
   coverageList.replaceChildren();
+  if (deck.length === 0) {
+    addInsight(coverageList, "Add cards to check coverage", "Damage, healing, and protection will be counted here.", "info");
+    return;
+  }
   const coverage = [
     {
       label: "Damage",
