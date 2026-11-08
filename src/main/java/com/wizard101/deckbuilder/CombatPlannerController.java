@@ -62,11 +62,11 @@ public class CombatPlannerController {
         Combo recommended = result.recommendedCombo();
         if (recommended == null) {
             String needed = Double.isFinite(result.additionalBoostNeededPercent())
-                    ? String.format(Locale.ROOT, "%.1f%% additional combined boost",
+                    ? String.format(Locale.ROOT, "%.1f%% total combined boost",
                             result.additionalBoostNeededPercent())
                     : "pierce or another damage source is needed to overcome target resist";
-            calculationSummary.setText("No configured combo reaches the target's health; "
-                    + needed + " beyond the unboosted hit.");
+            calculationSummary.setText("No configured combo reaches the target's health. "
+                    + "The unboosted hit would need " + needed + " to reach it.");
         } else {
             calculationSummary.setText("Most efficient configured combo: "
                     + recommended.name() + " for about "
