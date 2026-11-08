@@ -37,6 +37,10 @@
     -fx-text-fill: #2c3e50;
 }
 
+.school-icon {
+    -fx-font-size: 16px;
+}
+
 .spell-name {
     -fx-font-size: 14px;
 }

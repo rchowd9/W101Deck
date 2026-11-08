@@ -11,6 +11,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -26,6 +27,14 @@ import java.util.Optional;
 public class ProgressionController {
     private static final List<String> SCHOOLS = List.of(
             "Fire", "Ice", "Storm", "Myth", "Life", "Death", "Balance");
+    private static final Map<String, String> SCHOOL_ICONS = Map.of(
+            "Fire", "🔥",
+            "Ice", "❄",
+            "Storm", "⚡",
+            "Myth", "🗿",
+            "Life", "🌿",
+            "Death", "💀",
+            "Balance", "⚖");
     private static final Map<String, SchoolAdvice> SCHOOL_ADVICE = Map.of(
             "Fire", new SchoolAdvice(
                     "Death for Feint's offensive setup; Ice for a zero-pip defensive option.",
@@ -85,6 +94,8 @@ public class ProgressionController {
         categorySelector.getItems().setAll("Main quest", "Side quest", "Badge");
         categorySelector.getSelectionModel().selectFirst();
         schoolSelector.getItems().setAll(SCHOOLS);
+        schoolSelector.setCellFactory(list -> new SchoolCell());
+        schoolSelector.setButtonCell(new SchoolCell());
         schoolSelector.getSelectionModel().selectFirst();
         schoolSelector.valueProperty().addListener(
                 (observable, oldValue, newValue) -> updateSchoolAdvice());
@@ -229,5 +240,23 @@ public class ProgressionController {
     }
 
     private record SchoolAdvice(String secondarySchools, String trainingSpells) {
+    }
+
+    private static final class SchoolCell extends ListCell<String> {
+        @Override
+        protected void updateItem(String school, boolean empty) {
+            super.updateItem(school, empty);
+            if (empty || school == null) {
+                setText(null);
+                setGraphic(null);
+                setAccessibleText(null);
+                return;
+            }
+            Label icon = new Label(SCHOOL_ICONS.get(school));
+            icon.getStyleClass().add("school-icon");
+            setText(school);
+            setGraphic(icon);
+            setAccessibleText(school + " school");
+        }
     }
 }
