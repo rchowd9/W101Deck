@@ -4,6 +4,8 @@ The JavaFX desktop app includes a spell deck builder with local deck
 saving/export, searchable school and role filters, live card-role mix guidance,
 a deck-updating pip curve, a pet talent pool calculator, a per-character
 crafting and reagent tracker, and a world progression checklist. Its curated
+world progression screen also offers school-specific secondary-school and
+off-school spell suggestions as optional planning guidance. Its curated
 example deck catalog covers AoE and single-target hits, damage enchants, and
 support cards; verify current spell details in-game. Planner records are stored
 in a local SQLite database at `~/.wizard101-deck-builder/planner.db`; no game

@@ -21,6 +21,20 @@
                 <ComboBox fx:id="categorySelector" prefWidth="150"/>
                 <Button text="Add checklist item" onAction="#handleAddObjective"/>
             </HBox>
+            <VBox spacing="6" styleClass="battle-card">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Secondary school &amp; training tips" styleClass="section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Primary school"/>
+                    <ComboBox fx:id="schoolSelector" prefWidth="130"/>
+                </HBox>
+                <Label text="Secondary-school ideas" styleClass="section-title"/>
+                <Label fx:id="secondarySchoolAdvice" wrapText="true"/>
+                <Label text="Off-school spells worth considering" styleClass="section-title"/>
+                <Label fx:id="trainingSpellAdvice" wrapText="true"/>
+                <Label text="Suggestions are optional; check current spell requirements, pip access, and training-point costs in-game."
+                       wrapText="true" styleClass="muted-text"/>
+            </VBox>
             <Label fx:id="progressSummary" text="Add a character to start a world checklist."
                    styleClass="section-title"/>
             <ProgressBar fx:id="worldProgress" progress="0" maxWidth="Infinity"/>

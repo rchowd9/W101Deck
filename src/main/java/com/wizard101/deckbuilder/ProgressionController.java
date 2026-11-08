@@ -20,9 +20,44 @@ import javafx.scene.layout.GridPane;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ProgressionController {
+    private static final List<String> SCHOOLS = List.of(
+            "Fire", "Ice", "Storm", "Myth", "Life", "Death", "Balance");
+    private static final Map<String, SchoolAdvice> SCHOOL_ADVICE = Map.of(
+            "Fire", new SchoolAdvice(
+                    "Death for Feint's offensive setup; Ice for a zero-pip defensive option.",
+                    "Feint (Death) to amplify a target hit; Tower Shield (Ice) to reduce an incoming hit; "
+                            + "Colossal or Epic (Sun) to strengthen a damage spell."),
+            "Ice", new SchoolAdvice(
+                    "Death for stronger offensive setup; Life for an optional team-healing tool.",
+                    "Feint (Death) to amplify a target hit; Satyr (Life) for a substantial ally heal; "
+                            + "Colossal or Epic (Sun) to strengthen a damage spell."),
+            "Storm", new SchoolAdvice(
+                    "Death for Feint's offensive setup, Life for healing, or Ice for extra protection.",
+                    "Feint (Death) to amplify a target hit; Satyr (Life) for an optional ally heal; "
+                            + "Tower Shield (Ice) for a zero-pip defense; Colossal or Epic (Sun) "
+                            + "to strengthen a damage spell."),
+            "Myth", new SchoolAdvice(
+                    "Death for stronger offensive setup; Life for an optional team-healing tool.",
+                    "Feint (Death) to amplify a target hit; Satyr (Life) for a substantial ally heal; "
+                            + "Colossal or Epic (Sun) to strengthen a damage spell."),
+            "Life", new SchoolAdvice(
+                    "Death for stronger offensive setup; Ice for extra protection when healing is not enough.",
+                    "Feint (Death) to amplify a target hit; Tower Shield (Ice) for a zero-pip defense; "
+                            + "Colossal or Epic (Sun) to strengthen a damage spell."),
+            "Death", new SchoolAdvice(
+                    "Life for an optional ally-healing tool; Ice for extra protection.",
+                    "Satyr (Life) for a substantial ally heal; Tower Shield (Ice) for a zero-pip defense; "
+                            + "Colossal or Epic (Sun) to strengthen a damage spell."),
+            "Balance", new SchoolAdvice(
+                    "Death for stronger offensive setup, Life for healing, or Ice for extra protection.",
+                    "Feint (Death) to amplify a target hit; Satyr (Life) for an optional ally heal; "
+                            + "Tower Shield (Ice) for a zero-pip defense; Colossal or Epic (Sun) "
+                            + "to strengthen a damage spell."));
+
     private static final List<String> WORLDS = List.of(
             "Wizard City", "Krokotopia", "Marleybone", "Mooshu", "Dragonspyre",
             "Celestia", "Zafaria", "Avalon", "Azteca", "Khrysalis", "Polaris",
@@ -31,6 +66,9 @@ public class ProgressionController {
     @FXML private ComboBox<String> characterSelector;
     @FXML private ComboBox<String> worldSelector;
     @FXML private ComboBox<String> categorySelector;
+    @FXML private ComboBox<String> schoolSelector;
+    @FXML private Label secondarySchoolAdvice;
+    @FXML private Label trainingSpellAdvice;
     @FXML private TableView<ProgressionItem> objectiveTable;
     @FXML private TableColumn<ProgressionItem, Boolean> completeColumn;
     @FXML private TableColumn<ProgressionItem, String> categoryColumn;
@@ -46,6 +84,10 @@ public class ProgressionController {
         worldSelector.getSelectionModel().selectFirst();
         categorySelector.getItems().setAll("Main quest", "Side quest", "Badge");
         categorySelector.getSelectionModel().selectFirst();
+        schoolSelector.getItems().setAll(SCHOOLS);
+        schoolSelector.getSelectionModel().selectFirst();
+        schoolSelector.valueProperty().addListener(
+                (observable, oldValue, newValue) -> updateSchoolAdvice());
         completeColumn.setCellValueFactory(cell ->
                 new ReadOnlyBooleanWrapper(cell.getValue().complete()));
         completeColumn.setCellFactory(CheckBoxTableCell.forTableColumn(completeColumn));
@@ -65,6 +107,7 @@ public class ProgressionController {
         } catch (SQLException exception) {
             showError("Could not load characters", exception.getMessage());
         }
+        updateSchoolAdvice();
         refreshObjectives();
     }
 
@@ -166,11 +209,25 @@ public class ProgressionController {
         }
     }
 
+    private void updateSchoolAdvice() {
+        SchoolAdvice advice = SCHOOL_ADVICE.get(schoolSelector.getValue());
+        if (advice == null) {
+            secondarySchoolAdvice.setText("");
+            trainingSpellAdvice.setText("");
+            return;
+        }
+        secondarySchoolAdvice.setText(advice.secondarySchools());
+        trainingSpellAdvice.setText(advice.trainingSpells());
+    }
+
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(title);
         alert.setContentText(message == null ? "An unexpected database error occurred." : message);
         alert.showAndWait();
+    }
+
+    private record SchoolAdvice(String secondarySchools, String trainingSpells) {
     }
 }
