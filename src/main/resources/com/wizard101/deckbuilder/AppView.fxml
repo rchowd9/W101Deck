@@ -11,6 +11,11 @@
                 <fx:include source="DeckBuilderView.fxml"/>
             </content>
         </Tab>
+        <Tab text="Combat Planner">
+            <content>
+                <fx:include source="CombatPlannerView.fxml"/>
+            </content>
+        </Tab>
         <Tab text="Pet Planner">
             <content>
                 <fx:include source="PetPlannerView.fxml"/>

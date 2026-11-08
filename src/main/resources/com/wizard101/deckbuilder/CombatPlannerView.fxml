@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.wizard101.deckbuilder.CombatPlannerController" styleClass="planner-page">
+    <top>
+        <VBox spacing="5" styleClass="planner-heading">
+            <Label text="Combat Planner" styleClass="page-title"/>
+            <Label text="Estimate a hit against a target and compare the smallest blade/trap setup that reaches its health."
+                   styleClass="muted-text" wrapText="true"/>
+        </VBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="list-scroll">
+            <VBox spacing="14" styleClass="planner-card">
+                <VBox spacing="8" styleClass="battle-card">
+                    <Label text="Your wizard stats (%)" styleClass="section-title"/>
+                    <GridPane hgap="10" vgap="8">
+                        <Label text="Damage" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <TextField fx:id="wizardDamage" promptText="e.g. 100" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label text="Pierce" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                        <TextField fx:id="wizardPierce" promptText="e.g. 15" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                        <Label text="Resist" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <TextField fx:id="wizardResist" promptText="e.g. 20" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Accuracy" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                        <TextField fx:id="wizardAccuracy" promptText="e.g. 10" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                    </GridPane>
+                </VBox>
+                <VBox spacing="8" styleClass="battle-card">
+                    <Label text="Spell and target" styleClass="section-title"/>
+                    <GridPane hgap="10" vgap="8">
+                        <Label text="Spell base damage" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <TextField fx:id="spellBaseDamage" promptText="Without buffs" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label text="Spell accuracy (%)" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                        <TextField fx:id="spellBaseAccuracy" promptText="Before gear" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                        <Label text="Target health" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <TextField fx:id="targetHealth" promptText="Mob health" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Target resist (%)" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                        <TextField fx:id="targetResist" promptText="Before pierce" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                    </GridPane>
+                </VBox>
+                <VBox spacing="8" styleClass="battle-card">
+                    <Label text="Available boosts (%)" styleClass="section-title"/>
+                    <GridPane hgap="10" vgap="8">
+                        <Label text="Blade" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <TextField fx:id="bladeBoost" promptText="e.g. 35" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label text="Trap" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                        <TextField fx:id="trapBoost" promptText="e.g. 30" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                        <Label text="Enemy raw hit (optional)" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <TextField fx:id="incomingRawDamage" promptText="Compare your resist" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    </GridPane>
+                </VBox>
+                <VBox spacing="8" styleClass="battle-card">
+                    <Label text="Recommended plan" styleClass="section-title"/>
+                    <Label fx:id="calculationSummary" wrapText="true" styleClass="analysis-summary"/>
+                    <Label fx:id="comboBreakdown" wrapText="true"/>
+                </VBox>
+                <Label text="Planning estimate only: uses a simplified multiplicative damage/boost model, applies pierce against target resist, and treats accuracy as additive (capped at 100%). Enter the spell's actual base damage, accuracy, and boost values; in-game rounding, wards, and other modifiers can change results."
+                       wrapText="true" styleClass="muted-text"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
