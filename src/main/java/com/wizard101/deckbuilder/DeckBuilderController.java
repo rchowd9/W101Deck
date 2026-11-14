@@ -57,6 +57,7 @@ public class DeckBuilderController {
     @FXML private BarChart<String, Number> pipCurveChart;
     @FXML private CategoryAxis pipCostAxis;
     @FXML private NumberAxis pipCountAxis;
+    @FXML private ToolIntegrationController toolIntegrationController;
 
     private static final int MAX_DECK_SIZE = 64;
     private final Deck deck = new Deck(MAX_DECK_SIZE);
@@ -84,6 +85,7 @@ public class DeckBuilderController {
         updateDeckStats();
         updateDeckAnalysis();
         refreshSavedDecks();
+        toolIntegrationController.setCurrentDeck(deck.getCards());
     }
 
     @FXML
@@ -115,6 +117,7 @@ public class DeckBuilderController {
         try {
             repository.saveDeck(name, deck.getCards());
             refreshSavedDecks();
+            toolIntegrationController.refreshDeckChoices();
             savedDeckSelector.getSelectionModel().select(name);
         } catch (SQLException exception) {
             showError("Could not save deck", exception.getMessage());
@@ -334,6 +337,7 @@ public class DeckBuilderController {
     }
 
     private void refreshDeck() {
+        toolIntegrationController.setCurrentDeck(deck.getCards());
         deckTilePane.getChildren().clear();
         for (Card card : deck.getCards()) {
             VBox deckCard = new VBox(6);

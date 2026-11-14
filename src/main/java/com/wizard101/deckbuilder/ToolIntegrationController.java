@@ -18,6 +18,7 @@ import javafx.stage.Window;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,7 +80,7 @@ public class ToolIntegrationController {
         }
         try {
             choices.addAll(repository.getSavedDeckNames());
-        } catch (Exception exception) {
+        } catch (SQLException exception) {
             showError("Could not load saved decks", exception.getMessage());
         }
         compareDeckSelector.setItems(FXCollections.observableArrayList(choices));
@@ -152,6 +153,8 @@ public class ToolIntegrationController {
             Files.writeString(destination.toPath(), export.toString(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             showError("Could not export deck", exception.getMessage());
+        } catch (SQLException exception) {
+            showError("Could not load deck", exception.getMessage());
         }
     }
 
@@ -225,14 +228,14 @@ public class ToolIntegrationController {
                     + " sample-only · " + deckOnly + " deck-only");
             comparisonDetails.setText("Sample contains " + sampleCounts.values().stream()
                     .mapToInt(Integer::intValue).sum() + " cards; selected deck contains " + cards.size() + ".");
-        } catch (Exception exception) {
+        } catch (SQLException exception) {
             comparisonResult.setText("Could not compare this deck.");
             comparisonDetails.setText(exception.getMessage());
             showError("Could not compare deck", exception.getMessage());
         }
     }
 
-    private List<Card> getSelectedDeck() throws java.sql.SQLException {
+    private List<Card> getSelectedDeck() throws SQLException {
         String selection = compareDeckSelector.getValue();
         if (selection == null) {
             return null;

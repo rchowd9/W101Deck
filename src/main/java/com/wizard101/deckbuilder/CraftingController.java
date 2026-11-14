@@ -33,6 +33,7 @@ public class CraftingController {
     @FXML private Label projectSummary;
     @FXML private Label missingAlert;
     @FXML private ProgressBar materialProgress;
+    @FXML private ToolIntegrationController toolIntegrationController;
 
     private final PlannerRepository repository = PlannerRepository.getInstance();
 
