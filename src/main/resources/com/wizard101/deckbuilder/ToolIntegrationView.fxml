@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.wizard101.deckbuilder.ToolIntegrationController"
+            fitToWidth="true" styleClass="list-scroll">
+    <content>
+        <VBox spacing="12" styleClass="planner-card">
+            <Label text="Community build samples" styleClass="section-title"/>
+            <Label text="Offline examples for filtering and comparison; not live or ranked community data."
+                   wrapText="true" styleClass="muted-text"/>
+            <ComboBox fx:id="buildSchoolFilter" promptText="School" maxWidth="Infinity"/>
+            <ComboBox fx:id="buildLevelFilter" promptText="Level" maxWidth="Infinity"/>
+            <ComboBox fx:id="buildRoleFilter" promptText="Role" maxWidth="Infinity"/>
+            <ListView fx:id="communityBuildList" prefHeight="105" accessibleText="Sample community builds"/>
+            <Label fx:id="buildDescription" wrapText="true"/>
+            <VBox spacing="6" styleClass="battle-card">
+                <Label text="Compare with your deck" styleClass="section-title"/>
+                <ComboBox fx:id="compareDeckSelector" promptText="Current or saved deck" maxWidth="Infinity"/>
+                <Button text="Compare cards" onAction="#handleCompareBuild" maxWidth="Infinity"/>
+                <Label fx:id="comparisonResult" wrapText="true" styleClass="analysis-summary"/>
+                <Label fx:id="comparisonDetails" wrapText="true"/>
+                <Button text="Export selected deck..." onAction="#handleExportDeck" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" styleClass="battle-card">
+                <Label text="Combo damage estimate" styleClass="section-title"/>
+                <GridPane hgap="8" vgap="6">
+                    <Label text="Base hit" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="baseDamageField" text="100" promptText="Damage"
+                               GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Label text="Wizard damage %" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="wizardDamageField" text="100" promptText="Percent"
+                               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Label text="Pierce %" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="pierceField" text="0" promptText="Percent"
+                               GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <Label text="Target resist %" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <TextField fx:id="targetResistField" text="0" promptText="Percent"
+                               GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                    <Label text="Blade %" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                    <TextField fx:id="bladeField" text="35" promptText="Percent"
+                               GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                    <Label text="Trap %" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                    <TextField fx:id="trapField" text="30" promptText="Percent"
+                               GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                    <Label text="Target health" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                    <TextField fx:id="targetHealthField" text="400" promptText="Health"
+                               GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                </GridPane>
+                <Button text="Test combos" onAction="#handleCalculateCombos" maxWidth="Infinity"/>
+                <Label fx:id="comboResult" text="Run the estimate to compare hit, blade, and trap combinations."
+                       wrapText="true"/>
+            </VBox>
+            <Label text="Damage is a simplified planning estimate; in-game mechanics can change results."
+                   wrapText="true" styleClass="muted-text"/>
+        </VBox>
+    </content>
+</ScrollPane>
