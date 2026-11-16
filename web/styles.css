@@ -640,11 +640,46 @@ textarea:focus {
 }
 
 .coverage-list,
+.recommendation-list,
 .synergy-list,
 .consistency-list {
   display: grid;
   gap: 7px;
   margin-top: 12px;
+}
+
+.recommendation-card {
+  display: grid;
+  gap: 6px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-left: 3px solid #4269bd;
+  border-radius: 8px;
+  background: #f6f8fd;
+}
+
+.recommendation-card strong {
+  color: var(--navy);
+  font-size: 11px;
+}
+
+.recommendation-meta {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.recommendation-card span:not(.recommendation-meta) {
+  color: #536178;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.recommendation-card .button {
+  justify-self: start;
+  margin-top: 2px;
 }
 
 .insight-item {

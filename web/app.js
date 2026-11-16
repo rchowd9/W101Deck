@@ -75,6 +75,7 @@ const analysisBreakdown = document.querySelector("#analysis-breakdown");
 const validationSummary = document.querySelector("#validation-summary");
 const validationList = document.querySelector("#validation-list");
 const coverageList = document.querySelector("#coverage-list");
+const recommendationList = document.querySelector("#recommendation-list");
 const synergyList = document.querySelector("#synergy-list");
 const consistencyList = document.querySelector("#consistency-list");
 const handList = document.querySelector("#hand-list");
@@ -331,6 +332,128 @@ function renderSynergies() {
       "Add combinations such as Feint and a damage spell, damage over time and a shield, or healing and protection.",
       "info"
     );
+  }
+}
+
+function buildDeckRoleProfile() {
+  const roleCounts = { damage: 0, healing: 0, defense: 0, utility: 0, shadow: 0 };
+  const schoolCounts = new Map();
+
+  for (const spell of deck) {
+    schoolCounts.set(spell.school, (schoolCounts.get(spell.school) || 0) + 1);
+    if (spell.type === "Damage" || typeof spell.damage === "number" && spell.damage > 0) roleCounts.damage += 1;
+    if (spell.type === "Healing" || spellHasEffect(spell, "healing")) roleCounts.healing += 1;
+    if (spell.type === "Defense" || spellHasEffect(spell, "shield")) roleCounts.defense += 1;
+    if (spell.type === "Utility" || spellHasEffect(spell, "trap") || spellHasEffect(spell, "weakness") || spellHasEffect(spell, "stun")) roleCounts.utility += 1;
+    if (spell.type === "Shadow" || spellHasEffect(spell, "shadow")) roleCounts.shadow += 1;
+  }
+
+  const primarySchool = [...schoolCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || "Fire";
+  return { roleCounts, primarySchool };
+}
+
+function getRecommendationReason(spell, role) {
+  switch (role) {
+    case "damage":
+      return `Boost your pressure with ${spell.name}, a reliable ${spell.school} damage option.`;
+    case "healing":
+      return `Add recovery to keep your deck stable with ${spell.name}.`;
+    case "defense":
+      return `Field ${spell.name} to add protection and reduce incoming pressure.`;
+    case "utility":
+      return `Use ${spell.name} to add utility, control, or tactical flexibility.`;
+    default:
+      return `Round out your build with ${spell.name}.`;
+  }
+}
+
+function renderRecommendations() {
+  recommendationList.replaceChildren();
+  const roleProfile = buildDeckRoleProfile();
+  const recommended = [];
+  const inDeckIds = new Set(deck.map((spell) => spell.id));
+  const focusSchool = roleProfile.primarySchool;
+
+  const rolePriorities = [
+    ["damage", "Damage"],
+    ["healing", "Healing"],
+    ["defense", "Defense"],
+    ["utility", "Utility"]
+  ];
+
+  for (const [role, roleLabel] of rolePriorities) {
+    if (roleProfile.roleCounts[role] > 0) continue;
+    const pool = spells.filter((spell) =>
+      !inDeckIds.has(spell.id) &&
+      (spell.school === focusSchool || spell.type === roleLabel || (role === "damage" && spell.type === "Damage") || (role === "utility" && spell.type === "Utility"))
+    );
+    const best = pool.sort((a, b) => {
+      const schoolMatchDiff = Number(b.school === focusSchool) - Number(a.school === focusSchool);
+      const typeDiff = Number(b.type === roleLabel) - Number(a.type === roleLabel);
+      const rankDiff = a.rank - b.rank;
+      return schoolMatchDiff || typeDiff || rankDiff || a.name.localeCompare(b.name);
+    })[0];
+
+    if (best) {
+      recommended.push({ spell: best, role });
+    }
+  }
+
+  if (recommended.length === 0) {
+    const pool = spells.filter((spell) => !inDeckIds.has(spell.id) && spell.school === focusSchool).slice(0, 3);
+    for (const spell of pool) {
+      recommended.push({ spell, role: "utility" });
+    }
+  }
+
+  const unique = [];
+  const seen = new Set();
+  for (const item of recommended) {
+    if (seen.has(item.spell.id)) continue;
+    unique.push(item);
+    seen.add(item.spell.id);
+    if (unique.length >= 3) break;
+  }
+
+  if (unique.length === 0) {
+    addInsight(
+      recommendationList,
+      "Your deck looks complete",
+      "Add a different school or change your plan if you want a more specialized build.",
+      "success"
+    );
+    return;
+  }
+
+  for (const { spell, role } of unique) {
+    const item = document.createElement("div");
+    item.className = "recommendation-card";
+
+    const title = document.createElement("strong");
+    title.textContent = spell.name;
+
+    const meta = document.createElement("span");
+    meta.className = "recommendation-meta";
+    meta.textContent = `${spell.school} · Rank ${spell.rank} · ${formatSpellCost(spell)}`;
+
+    const reason = document.createElement("span");
+    reason.textContent = getRecommendationReason(spell, role);
+
+    const action = document.createElement("button");
+    action.className = "button button-primary";
+    action.type = "button";
+    action.textContent = "Add card";
+    action.addEventListener("click", () => {
+      if (deck.length < MAX_DECK_SIZE) {
+        deck.push(spell);
+        resetSimulator();
+        resetConsistencyStats();
+        render();
+      }
+    });
+
+    item.append(title, meta, reason, action);
+    recommendationList.append(item);
   }
 }
 
@@ -701,6 +824,7 @@ function render() {
   renderValidation();
   renderAnalysis();
   renderCoverage();
+  renderRecommendations();
   renderSynergies();
   renderConsistencyMetrics();
   renderHand();
