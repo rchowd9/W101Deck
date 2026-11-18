@@ -5,6 +5,7 @@ import com.wizard101.deckbuilder.service.PlannerRepository.CraftMaterial;
 import com.wizard101.deckbuilder.service.PlannerRepository.CraftProject;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -33,9 +34,11 @@ public class CraftingController {
     @FXML private Label projectSummary;
     @FXML private Label missingAlert;
     @FXML private ProgressBar materialProgress;
+    @FXML private TextField materialFilter;
     @FXML private ToolIntegrationController toolIntegrationController;
 
     private final PlannerRepository repository = PlannerRepository.getInstance();
+    private FilteredList<CraftMaterial> filteredMaterials;
 
     @FXML
     public void initialize() {
@@ -51,6 +54,12 @@ public class CraftingController {
         ownedColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         ownedColumn.setOnEditCommit(event -> updateOwnedCount(event.getRowValue(), event.getNewValue()));
         projectSelector.valueProperty().addListener((observable, oldValue, newValue) -> refreshMaterials());
+        filteredMaterials = new FilteredList<>(
+                FXCollections.observableArrayList(),
+                material -> true);
+        materialTable.setItems(filteredMaterials);
+        materialFilter.textProperty().addListener((observable, oldValue, newValue) ->
+                applyMaterialFilter(newValue));
         refreshProjects();
     }
 
@@ -173,7 +182,8 @@ public class CraftingController {
                 projectSelector.getSelectionModel().selectFirst();
             }
             if (projects.isEmpty()) {
-                materialTable.getItems().clear();
+                filteredMaterials.setPredicate(material -> true);
+                filteredMaterials.getSource().clear();
                 projectSummary.setText("Create a goal, then add the recipe or materials you still need.");
                 missingAlert.setText("No crafting goal selected.");
                 materialProgress.setProgress(0);
@@ -190,7 +200,8 @@ public class CraftingController {
         }
         try {
             List<CraftMaterial> materials = repository.getCraftMaterials(project.id());
-            materialTable.setItems(FXCollections.observableArrayList(materials));
+            filteredMaterials.getSource().setAll(materials);
+            applyMaterialFilter(materialFilter.getText());
             int required = materials.stream().mapToInt(CraftMaterial::requiredCount).sum();
             int owned = materials.stream().mapToInt(material ->
                     Math.min(material.requiredCount(), material.ownedCount())).sum();

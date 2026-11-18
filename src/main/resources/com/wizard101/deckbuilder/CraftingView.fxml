@@ -23,6 +23,7 @@
                                 <Button text="New gear goal" onAction="#handleAddProject"/>
                                 <Button text="Add material" onAction="#handleAddMaterial"/>
                             </HBox>
+                            <TextField fx:id="materialFilter" promptText="Search materials or sources"/>
                             <Label fx:id="projectSummary" text="Create a goal, then add the recipe or materials you still need."
                                    styleClass="section-title"/>
                             <ProgressBar fx:id="materialProgress" progress="0" maxWidth="Infinity"/>
