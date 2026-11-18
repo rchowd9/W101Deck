@@ -193,9 +193,19 @@ public class CraftingController {
         }
     }
 
+    private void applyMaterialFilter(String searchText) {
+        String query = searchText == null ? "" : searchText.trim().toLowerCase();
+        filteredMaterials.setPredicate(material ->
+                query.isEmpty()
+                        || material.name().toLowerCase().contains(query)
+                        || material.source().toLowerCase().contains(query));
+    }
+
     private void refreshMaterials() {
         CraftProject project = projectSelector.getValue();
         if (project == null) {
+            filteredMaterials.getSource().clear();
+            filteredMaterials.setPredicate(material -> true);
             return;
         }
         try {
