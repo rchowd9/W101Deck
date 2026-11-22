@@ -139,6 +139,9 @@ public class MonstrologyController {
             }
             int targetCount = parseCount(target.getText(), "Target");
             int extractedCount = parseCount(extracted.getText(), "Extracted");
+            if (targetCount == 0) {
+                throw new IllegalArgumentException("Target count must be at least 1.");
+            }
             repository.addMonstrologyEntry(character, creature.getText().trim(),
                     animus.getEditor().getText().trim(), extractedCount, targetCount,
                     location.getText().trim());
