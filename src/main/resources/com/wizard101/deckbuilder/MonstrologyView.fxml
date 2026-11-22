@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.wizard101.deckbuilder.MonstrologyController"
+      spacing="14" styleClass="planner-card">
+    <HBox spacing="10">
+        <ComboBox fx:id="characterSelector" promptText="Choose character" prefWidth="220"/>
+        <Button text="Add character" onAction="#handleAddCharacter"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Add extraction goal" onAction="#handleAddEntry"/>
+    </HBox>
+    <TextField fx:id="entryFilter" promptText="Search creatures, animus, or locations"/>
+    <Label fx:id="progressSummary" text="Add a character to start tracking Monstrology."
+           styleClass="section-title"/>
+    <ProgressBar fx:id="extractProgress" progress="0" maxWidth="Infinity"/>
+    <TableView fx:id="entryTable" editable="true" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="creatureColumn" text="Creature" prefWidth="220"/>
+            <TableColumn fx:id="animusColumn" text="Animus" prefWidth="130"/>
+            <TableColumn fx:id="locationColumn" text="Location" prefWidth="300"/>
+            <TableColumn fx:id="targetColumn" text="Target" prefWidth="100"/>
+            <TableColumn fx:id="extractedColumn" text="Extracted (edit)" prefWidth="140"/>
+            <TableColumn fx:id="remainingColumn" text="Remaining" prefWidth="110"/>
+        </columns>
+        <placeholder>
+            <Label text="Choose a character and add a creature extraction goal."/>
+        </placeholder>
+    </TableView>
+    <Label text="Animus totals are user-entered; verify creature amounts and in-game requirements before farming."
+           wrapText="true" styleClass="muted-text"/>
+</VBox>
