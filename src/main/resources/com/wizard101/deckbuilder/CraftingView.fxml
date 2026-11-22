@@ -50,6 +50,11 @@
                         <fx:include fx:id="toolIntegration" source="ToolIntegrationView.fxml"/>
                     </content>
                 </Tab>
+                <Tab text="Monstrology">
+                    <content>
+                        <fx:include source="MonstrologyView.fxml"/>
+                    </content>
+                </Tab>
             </tabs>
         </TabPane>
     </center>
