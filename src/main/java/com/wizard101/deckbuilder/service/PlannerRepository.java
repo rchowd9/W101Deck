@@ -96,6 +96,17 @@ public final class PlannerRepository {
                     title TEXT NOT NULL,
                     complete INTEGER NOT NULL DEFAULT 0 CHECK (complete IN (0, 1))
                 )
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS monstrology_entries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    character_name TEXT NOT NULL,
+                    creature TEXT NOT NULL,
+                    animus_type TEXT NOT NULL,
+                    extracted_count INTEGER NOT NULL CHECK (extracted_count >= 0),
+                    target_count INTEGER NOT NULL CHECK (target_count >= 0),
+                    location TEXT NOT NULL
+                )
                 """
         };
         try (Connection connection = connect(); Statement statement = connection.createStatement()) {
@@ -291,6 +302,63 @@ public final class PlannerRepository {
         }
     }
 
+    public void addMonstrologyEntry(String characterName, String creature, String animusType,
+                                    int extractedCount, int targetCount, String location)
+            throws SQLException {
+        String sql = """
+                INSERT INTO monstrology_entries(
+                    character_name, creature, animus_type, extracted_count, target_count, location)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """;
+        try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, characterName);
+            statement.setString(2, creature);
+            statement.setString(3, animusType);
+            statement.setInt(4, extractedCount);
+            statement.setInt(5, targetCount);
+            statement.setString(6, location);
+            statement.executeUpdate();
+        }
+    }
+
+    public List<MonstrologyEntry> getMonstrologyEntries(String characterName) throws SQLException {
+        List<MonstrologyEntry> entries = new ArrayList<>();
+        String sql = """
+                SELECT id, character_name, creature, animus_type, extracted_count, target_count, location
+                FROM monstrology_entries
+                WHERE character_name = ?
+                ORDER BY creature
+                """;
+        try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, characterName);
+            try (ResultSet results = statement.executeQuery()) {
+                while (results.next()) {
+                    entries.add(new MonstrologyEntry(
+                            results.getLong("id"),
+                            results.getString("character_name"),
+                            results.getString("creature"),
+                            results.getString("animus_type"),
+                            results.getInt("extracted_count"),
+                            results.getInt("target_count"),
+                            results.getString("location")));
+                }
+            }
+        }
+        return entries;
+    }
+
+    public void updateMonstrologyExtractedCount(long entryId, int extractedCount) throws SQLException {
+        try (Connection connection = connect();
+             PreparedStatement statement = connection.prepareStatement(
+                     "UPDATE monstrology_entries SET extracted_count = ? WHERE id = ?")) {
+            statement.setInt(1, extractedCount);
+            statement.setLong(2, entryId);
+            if (statement.executeUpdate() != 1) {
+                throw new SQLException("The Monstrology entry no longer exists.");
+            }
+        }
+    }
+
     public void addCharacter(String name) throws SQLException {
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(
@@ -369,6 +437,10 @@ public final class PlannerRepository {
     }
 
     public record CraftMaterial(long id, String name, String source, int requiredCount, int ownedCount) {
+    }
+
+    public record MonstrologyEntry(long id, String characterName, String creature, String animusType,
+                                   int extractedCount, int targetCount, String location) {
     }
 
     public record ProgressionItem(long id, String world, String category, String title, boolean complete) {
