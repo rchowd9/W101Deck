@@ -4,7 +4,10 @@ import com.wizard101.deckbuilder.service.CombatCalculator;
 import com.wizard101.deckbuilder.service.CombatCalculator.Combo;
 import com.wizard101.deckbuilder.service.CombatCalculator.Inputs;
 import com.wizard101.deckbuilder.service.CombatCalculator.Result;
+import com.wizard101.deckbuilder.service.CombatSimulation;
+import com.wizard101.deckbuilder.service.CombatSimulation.Mode;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
@@ -23,16 +26,27 @@ public class CombatPlannerController {
     @FXML private TextField bladeBoost;
     @FXML private TextField trapBoost;
     @FXML private TextField incomingRawDamage;
+    @FXML private ComboBox<String> combatMode;
+    @FXML private TextField deckSize;
+    @FXML private TextField attackCardCount;
+    @FXML private TextField utilityCardCount;
+    @FXML private TextField openingHandSize;
     @FXML private Label calculationSummary;
     @FXML private Label comboBreakdown;
+    @FXML private Label simulationSummary;
 
     @FXML
     public void initialize() {
         List.of(wizardDamage, wizardPierce, wizardResist, wizardAccuracy, targetHealth,
                         targetResist, spellBaseDamage, spellBaseAccuracy, bladeBoost, trapBoost,
-                        incomingRawDamage)
+                        incomingRawDamage, deckSize, attackCardCount, utilityCardCount,
+                        openingHandSize)
                 .forEach(field -> field.textProperty().addListener(
                         (observable, oldValue, newValue) -> recalculate()));
+        combatMode.getItems().setAll("PvE", "PvP");
+        combatMode.getSelectionModel().selectFirst();
+        combatMode.valueProperty().addListener(
+                (observable, oldValue, newValue) -> recalculate());
         recalculate();
     }
 
@@ -52,10 +66,37 @@ public class CombatPlannerController {
                     optionalNumber(incomingRawDamage));
             Result result = CombatCalculator.calculate(inputs);
             showResult(result);
+            showSimulation(result);
         } catch (IllegalArgumentException exception) {
             calculationSummary.setText(exception.getMessage());
             comboBreakdown.setText("");
+            simulationSummary.setText("");
         }
+    }
+
+    private void showSimulation(Result combatResult) {
+        Mode mode = "PvP".equals(combatMode.getValue()) ? Mode.PVP : Mode.PVE;
+        double baseHitDamage = combatResult.combos().get(0).estimatedDamage();
+        CombatSimulation.Result simulation = CombatSimulation.simulate(
+                new CombatSimulation.Inputs(
+                        mode,
+                        integer(deckSize),
+                        integer(attackCardCount),
+                        integer(utilityCardCount),
+                        integer(openingHandSize),
+                        baseHitDamage,
+                        combatResult.hitChancePercent(),
+                        number(targetHealth)));
+        simulationSummary.setText(String.format(Locale.ROOT,
+                "%s opening-hand estimate: %.1f%% chance to draw an attack, "
+                        + "%.1f%% chance to draw utility, %.1f%% chance to draw a useful card. "
+                        + "Expected damage: %.0f; chance to defeat this target with one hit: %.1f%%.",
+                mode == Mode.PVE ? "PvE (attack-focused)" : "PvP (attack or utility)",
+                simulation.attackDrawChance() * 100,
+                simulation.utilityDrawChance() * 100,
+                simulation.usefulDrawChance() * 100,
+                simulation.expectedOpeningDamage(),
+                simulation.killChance() * 100));
     }
 
     private void showResult(Result result) {
@@ -106,6 +147,16 @@ public class CombatPlannerController {
         String value = field.getText().trim();
         if (value.isEmpty()) {
             return null;
+        }
+
+        private static int integer(TextField field) {
+            String value = field.getText().trim();
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException(
+                        "Enter a whole number for " + field.getPromptText() + ".");
+            }
         }
         try {
             return Double.parseDouble(value);

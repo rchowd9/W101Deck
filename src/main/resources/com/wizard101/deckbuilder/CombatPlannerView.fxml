@@ -8,7 +8,7 @@
     <top>
         <VBox spacing="5" styleClass="planner-heading">
             <Label text="Combat Planner" styleClass="page-title"/>
-            <Label text="Estimate a hit against a target and compare the smallest blade/trap setup that reaches its health."
+            <Label text="Estimate gear-adjusted damage and simulate opening-hand consistency for PvP or PvE."
                    styleClass="muted-text" wrapText="true"/>
         </VBox>
     </top>
@@ -53,11 +53,27 @@
                     </GridPane>
                 </VBox>
                 <VBox spacing="8" styleClass="battle-card">
+                    <Label text="Predictive simulation" styleClass="section-title"/>
+                    <GridPane hgap="10" vgap="8">
+                        <Label text="Mode" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <ComboBox fx:id="combatMode" prefWidth="130" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label text="Deck size" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                        <TextField fx:id="deckSize" text="40" promptText="Total cards" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                        <Label text="Attack cards" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <TextField fx:id="attackCardCount" text="8" promptText="Hits and AoEs" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Utility cards" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                        <TextField fx:id="utilityCardCount" text="8" promptText="Setup or defense" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                        <Label text="Opening hand" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <TextField fx:id="openingHandSize" text="7" promptText="Cards drawn" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    </GridPane>
+                    <Label fx:id="simulationSummary" wrapText="true" styleClass="analysis-summary"/>
+                </VBox>
+                <VBox spacing="8" styleClass="battle-card">
                     <Label text="Recommended plan" styleClass="section-title"/>
                     <Label fx:id="calculationSummary" wrapText="true" styleClass="analysis-summary"/>
                     <Label fx:id="comboBreakdown" wrapText="true"/>
                 </VBox>
-                <Label text="Planning estimate only: uses a simplified multiplicative damage/boost model, applies pierce against target resist, and treats accuracy as additive (capped at 100%). Enter the spell's actual base damage, accuracy, and boost values; in-game rounding, wards, and other modifiers can change results."
+                <Label text="Planning estimate only: damage uses a simplified multiplicative model with additive accuracy and pierce against target resist. Draw chances assume a random opening hand without replacement; expected damage assumes one attack can be attempted and does not model pip timing, card order, or in-game modifiers. Enter your combined gear stats and your deck's card counts."
                        wrapText="true" styleClass="muted-text"/>
             </VBox>
         </ScrollPane>

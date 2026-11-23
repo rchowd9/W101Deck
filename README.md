@@ -5,7 +5,8 @@ saving/export, searchable school and role filters, live card-role mix guidance,
 a deck-updating pip curve, a pet talent pool calculator, a per-character
 crafting and reagent tracker, a Monstrology extraction tracker, a world progression checklist, and a combat
 planner that compares blade/trap/hit damage using entered wizard and target
-stats. The progression screen also offers school-specific secondary-school
+stats and estimates PvP/PvE opening-hand attack and utility consistency from
+deck counts and entered gear stats. The progression screen also offers school-specific secondary-school
 and off-school spell suggestions as optional planning guidance. The combat
 planner is a simplified estimate; check current in-game mechanics. Its curated
 example deck catalog covers AoE and single-target hits, damage enchants, and
