@@ -40,7 +40,7 @@ public final class CombatSimulation {
             throw new IllegalArgumentException("Deck size must be at least 1.");
         }
         if (inputs.attackCardCount() < 0 || inputs.utilityCardCount() < 0
-                || inputs.attackCardCount() + inputs.utilityCardCount() > inputs.deckSize()) {
+                || (long) inputs.attackCardCount() + inputs.utilityCardCount() > inputs.deckSize()) {
             throw new IllegalArgumentException(
                     "Attack and utility card counts must be non-negative and fit in the deck.");
         }

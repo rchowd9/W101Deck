@@ -148,20 +148,20 @@ public class CombatPlannerController {
         if (value.isEmpty()) {
             return null;
         }
-
-        private static int integer(TextField field) {
-            String value = field.getText().trim();
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException exception) {
-                throw new IllegalArgumentException(
-                        "Enter a whole number for " + field.getPromptText() + ".");
-            }
-        }
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("Enter a valid number for " + field.getPromptText() + ".");
+        }
+    }
+
+    private static int integer(TextField field) {
+        String value = field.getText().trim();
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(
+                    "Enter a whole number for " + field.getPromptText() + ".");
         }
     }
 
