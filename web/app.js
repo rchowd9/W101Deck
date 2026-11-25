@@ -1460,7 +1460,7 @@ document.querySelector("#reset-deck").addEventListener("click", () => {
 });
 document.querySelector("#export-deck").addEventListener("click", () => {
   const cards = deck.map((spell) =>
-    `- ${spell.name} (${spell.school}, Rank ${spell.rank}, ${formatSpellCost(spell)})`
+    `- ${spell.name} (${spell.school}, ${spellRankLabel(spell)}, ${formatSpellCost(spell)})`
   );
   const fixedCostSpells = deck.filter((spell) => !spell.variablePipCost);
   const totalPips = fixedCostSpells.reduce((total, spell) => total + spell.pipCost, 0);
@@ -1479,6 +1479,30 @@ document.querySelector("#export-deck").addEventListener("click", () => {
   downloadFile("wizard101-deck.txt", summary, "text/plain;charset=utf-8");
 });
 
+document.querySelector("#export-deck-json").addEventListener("click", () => {
+  saveDeck();
+  const record = activeDeckRecord();
+  const build = {
+    format: "wizard101-deck-build",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    deck: {
+      name: record.name,
+      encounter: record.encounter,
+      notes: record.notes,
+      gearProfile: normalizeGearProfile(record.gearProfile),
+      combatProfile: normalizeCombatProfile(record.combatProfile),
+      cards: deck.map((spell) => ({ ...spell }))
+    }
+  };
+  downloadFile(
+    "wizard101-deck-build.json",
+    JSON.stringify(build, null, 2),
+    "application/json;charset=utf-8"
+  );
+  setWorkspaceStatus("Exported the active deck, gear profile, and combat stats as JSON.");
+});
+
 function downloadFile(filename, content, type) {
   const objectUrl = URL.createObjectURL(new Blob([content], { type }));
   const download = document.createElement("a");
@@ -1495,6 +1519,7 @@ document.querySelector("#export-backup").addEventListener("click", () => {
     version: 1,
     exportedAt: new Date().toISOString(),
     activeDeckId: workspace.activeDeckId,
+    importedSpells,
     decks: workspace.decks
   };
   downloadFile(
@@ -1505,6 +1530,24 @@ document.querySelector("#export-backup").addEventListener("click", () => {
   setWorkspaceStatus(`Exported ${workspace.decks.length} deck${workspace.decks.length === 1 ? "" : "s"} to a JSON backup.`);
 });
 
+document.querySelector("#export-catalog").addEventListener("click", () => {
+  const catalog = {
+    format: "wizard101-spell-catalog",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    source: "Wizardeo public catalog plus the bundled sample catalog",
+    spells: [...bundledSpells, ...importedSpells]
+  };
+  downloadFile(
+    "wizard101-spell-catalog.json",
+    JSON.stringify(catalog, null, 2),
+    "application/json;charset=utf-8"
+  );
+  setCatalogStatus(`Exported ${catalog.spells.length} spell records as structured JSON.`);
+});
+
+document.querySelector("#import-wizardeo").addEventListener("click", importWizardeoCatalog);
+
 document.querySelector("#share-deck").addEventListener("click", async () => {
   const record = activeDeckRecord();
   const shareData = {
@@ -1514,10 +1557,20 @@ document.querySelector("#share-deck").addEventListener("click", async () => {
     encounter: record.encounter,
     notes: record.notes,
     spellIds: deck.map((spell) => spell.id),
-    keySpellIds: [...keySpellIds]
+    keySpellIds: [...keySpellIds],
+    gearProfile: normalizeGearProfile(record.gearProfile),
+    combatProfile: normalizeCombatProfile(record.combatProfile),
+    importedSpells: [...new Map(
+      deck.filter((spell) => spell.source === "Wizardeo").map((spell) => [spell.id, spell])
+    ).values()]
   };
+  const serializedShareData = JSON.stringify(shareData);
+  if (serializedShareData.length > 9000) {
+    setWorkspaceStatus("This deck is too large for a share link. Export the workspace JSON instead.", true);
+    return;
+  }
   const shareUrl = new URL(window.location.href);
-  shareUrl.searchParams.set("share", JSON.stringify(shareData));
+  shareUrl.searchParams.set("share", serializedShareData);
 
   if (!navigator.clipboard?.writeText) {
     window.prompt("Copy this link to share the current deck:", shareUrl.toString());
@@ -1549,6 +1602,16 @@ backupFile.addEventListener("change", async () => {
     ) {
       throw new Error("Choose a valid Wizard101 Deck Builder workspace backup.");
     }
+    let importedCatalog = importedSpells;
+    if (parsed.importedSpells !== undefined) {
+      if (!Array.isArray(parsed.importedSpells)) {
+        throw new Error("The backup's imported spell catalog is not valid.");
+      }
+      importedCatalog = parsed.importedSpells.map(normalizeImportedSpell).filter(Boolean);
+      if (parsed.importedSpells.length > 0 && importedCatalog.length === 0) {
+        throw new Error("The backup's imported spell catalog contains no valid records.");
+      }
+    }
     const importedDecks = parsed.decks.map((record, index) => {
       if (!record || typeof record !== "object" || !Array.isArray(record.spellIds)) {
         throw new Error(`Deck ${index + 1} in the backup is not valid.`);
@@ -1562,6 +1625,8 @@ backupFile.addEventListener("change", async () => {
         notes: typeof record.notes === "string" ? record.notes.slice(0, 500) : "",
         keySpellIds: validKeySpellIds(record.keySpellIds),
         openingHandStats: normalizeOpeningHandStats(record.openingHandStats),
+        gearProfile: normalizeGearProfile(record.gearProfile),
+        combatProfile: normalizeCombatProfile(record.combatProfile),
         previousId: typeof record.id === "string" ? record.id : ""
       };
     });
@@ -1569,6 +1634,7 @@ backupFile.addEventListener("change", async () => {
       return;
     }
     const importedActive = importedDecks.find((record) => record.previousId === parsed.activeDeckId);
+    persistImportedCatalog(importedCatalog);
     workspace = {
       activeDeckId: importedActive ? importedActive.id : importedDecks[0].id,
       decks: importedDecks.map(({ previousId, ...record }) => record)
@@ -1599,10 +1665,21 @@ function restoreSharedDeckFromUrl() {
       shared.format !== "wizard101-deck-builder-share" ||
       shared.version !== 1 ||
       !Array.isArray(shared.spellIds) ||
-      shared.spellIds.length > MAX_DECK_SIZE ||
-      !shared.spellIds.every((id) => typeof id === "string" && spells.some((spell) => spell.id === id))
+      shared.spellIds.length > MAX_DECK_SIZE
     ) {
       throw new Error("This link does not contain a valid Wizard101 deck.");
+    }
+    const sharedCatalog = Array.isArray(shared.importedSpells)
+      ? shared.importedSpells.map(normalizeImportedSpell).filter(Boolean)
+      : [];
+    if (Array.isArray(shared.importedSpells) && shared.importedSpells.length > 0 && sharedCatalog.length === 0) {
+      throw new Error("The shared deck's imported spell data is invalid.");
+    }
+    const mergedCatalog = new Map(importedSpells.map((spell) => [spell.id, spell]));
+    for (const spell of sharedCatalog) mergedCatalog.set(spell.id, spell);
+    persistImportedCatalog([...mergedCatalog.values()]);
+    if (!shared.spellIds.every((id) => typeof id === "string" && spells.some((spell) => spell.id === id))) {
+      throw new Error("This deck references spell data that is not available.");
     }
 
     const record = createDeckRecord(
@@ -1612,6 +1689,8 @@ function restoreSharedDeckFromUrl() {
     record.keySpellIds = validKeySpellIds(shared.keySpellIds);
     record.encounter = typeof shared.encounter === "string" ? shared.encounter.slice(0, 64) : "";
     record.notes = typeof shared.notes === "string" ? shared.notes.slice(0, 500) : "";
+    record.gearProfile = normalizeGearProfile(shared.gearProfile);
+    record.combatProfile = normalizeCombatProfile(shared.combatProfile);
     workspace.decks.push(record);
     workspace.activeDeckId = record.id;
     setWorkspaceStatus(`Added shared deck "${record.name}" to this browser.`);
