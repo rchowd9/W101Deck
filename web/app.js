@@ -49,6 +49,7 @@ const DEFAULT_COMBAT_PROFILE = {
   baseAccuracy: 100,
   targetHealth: 400,
   targetResist: 0,
+  incomingRawDamage: null,
   blade: 35,
   trap: 30
 };
@@ -106,6 +107,7 @@ const combatInputs = {
   baseAccuracy: document.querySelector("#projection-base-accuracy"),
   targetHealth: document.querySelector("#projection-target-health"),
   targetResist: document.querySelector("#projection-target-resist"),
+  incomingRawDamage: document.querySelector("#projection-incoming-damage"),
   blade: document.querySelector("#projection-blade"),
   trap: document.querySelector("#projection-trap")
 };
@@ -232,6 +234,11 @@ function normalizeCombatProfile(profile) {
       ? value
       : DEFAULT_COMBAT_PROFILE[key];
   }
+  const incomingRawDamage = profile?.incomingRawDamage;
+  normalized.incomingRawDamage = Number.isFinite(incomingRawDamage)
+    && incomingRawDamage >= 0 && incomingRawDamage <= 100000000
+    ? incomingRawDamage
+    : null;
   return normalized;
 }
 
@@ -318,7 +325,7 @@ function setProfileInputs(record) {
   }
   const combat = normalizeCombatProfile(record.combatProfile);
   for (const [key, input] of Object.entries(combatInputs)) {
-    input.value = String(combat[key]);
+    input.value = combat[key] == null ? "" : String(combat[key]);
   }
   updateCombatProjection();
 }
@@ -335,7 +342,10 @@ function readGearProfile() {
 
 function readCombatProfile() {
   return Object.fromEntries(
-    Object.entries(combatInputs).map(([key, input]) => [key, input.valueAsNumber])
+    Object.entries(combatInputs).map(([key, input]) => [
+      key,
+      key === "incomingRawDamage" && input.value.trim() === "" ? null : input.valueAsNumber
+    ])
   );
 }
 
@@ -343,6 +353,33 @@ function validateProfileInput(profile, limits) {
   return Object.entries(limits).every(([key, [minimum, maximum]]) =>
     Number.isFinite(profile[key]) && profile[key] >= minimum && profile[key] <= maximum
   );
+}
+
+function calculateCombatProjection(gear, combat) {
+  const effectiveResist = Math.max(0, combat.targetResist - gear.piercePercent);
+  const baseHit = combat.baseDamage * (1 + gear.damagePercent / 100) * (1 - effectiveResist / 100);
+  const combos = [
+    { name: "Hit only", setup: 0, damage: Math.floor(baseHit) },
+    { name: "Blade + hit", setup: 1, damage: Math.floor(baseHit * (1 + combat.blade / 100)) },
+    { name: "Trap + hit", setup: 1, damage: Math.floor(baseHit * (1 + combat.trap / 100)) },
+    {
+      name: "Blade + trap + hit",
+      setup: 2,
+      damage: Math.floor(baseHit * (1 + combat.blade / 100) * (1 + combat.trap / 100))
+    }
+  ];
+  const recommended = combos
+    .filter((combo) => combo.damage >= combat.targetHealth)
+    .sort((first, second) => first.setup - second.setup || first.damage - second.damage)[0] || null;
+  const incomingDamage = combat.incomingRawDamage == null
+    ? null
+    : Math.floor(combat.incomingRawDamage * (1 - gear.resistPercent / 100));
+  return {
+    combos,
+    recommended,
+    hitChance: Math.min(100, combat.baseAccuracy + gear.accuracyPercent),
+    incomingDamage
+  };
 }
 
 function updateCombatProjection() {
@@ -359,9 +396,12 @@ function updateCombatProjection() {
     baseAccuracy: [0, 100],
     targetHealth: [1, 100000000],
     targetResist: [0, 100],
+    incomingRawDamage: [0, 100000000],
     blade: [0, 200],
     trap: [0, 200]
   };
+  const incomingRawDamage = combat.incomingRawDamage;
+  if (incomingRawDamage == null) delete combat.incomingRawDamage;
   projectionResult.replaceChildren();
   if (!validateProfileInput(gear, gearLimits) || !validateProfileInput(combat, combatLimits)) {
     projectionResult.textContent = "Enter valid values within the displayed stat ranges to calculate projections.";
@@ -370,30 +410,21 @@ function updateCombatProjection() {
   }
   projectionResult.classList.remove("status-error");
 
-  const effectiveResist = Math.max(0, combat.targetResist - gear.piercePercent);
-  const baseHit = combat.baseDamage * (1 + gear.damagePercent / 100) * (1 - effectiveResist / 100);
-  const combos = [
-    { name: "Hit only", setup: 0, damage: Math.floor(baseHit) },
-    { name: "Blade + hit", setup: 1, damage: Math.floor(baseHit * (1 + combat.blade / 100)) },
-    { name: "Trap + hit", setup: 1, damage: Math.floor(baseHit * (1 + combat.trap / 100)) },
-    {
-      name: "Blade + trap + hit",
-      setup: 2,
-      damage: Math.floor(baseHit * (1 + combat.blade / 100) * (1 + combat.trap / 100))
-    }
-  ];
-  const recommended = combos
-    .filter((combo) => combo.damage >= combat.targetHealth)
-    .sort((first, second) => first.setup - second.setup || first.damage - second.damage)[0];
+  const projection = calculateCombatProjection(gear, combat);
   const heading = document.createElement("strong");
-  heading.textContent = `${gear.name || "Current gear"} · ${Math.min(100, combat.baseAccuracy + gear.accuracyPercent).toFixed(0)}% estimated accuracy`;
+  heading.textContent = `${gear.name || "Current gear"} · ${projection.hitChance.toFixed(0)}% estimated accuracy`;
   projectionResult.append(heading);
   const summary = document.createElement("span");
-  summary.textContent = recommended
-    ? `Most efficient for ${combat.targetHealth} health: ${recommended.name} (${recommended.damage} estimated damage).`
+  summary.textContent = projection.recommended
+    ? `Most efficient for ${combat.targetHealth} health: ${projection.recommended.name} (${projection.recommended.damage} estimated damage).`
     : `No listed combo reaches ${combat.targetHealth} health with these inputs.`;
   projectionResult.append(summary);
-  for (const combo of combos) {
+  if (projection.incomingDamage != null) {
+    const incoming = document.createElement("span");
+    incoming.textContent = `Incoming hit after gear resist: ${projection.incomingDamage} estimated damage`;
+    projectionResult.append(incoming);
+  }
+  for (const combo of projection.combos) {
     const row = document.createElement("span");
     row.textContent = `${combo.name}: ${combo.damage} estimated damage`;
     projectionResult.append(row);
