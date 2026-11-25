@@ -1,8 +1,11 @@
 const MAX_DECK_SIZE = 64;
 const SAVED_DECK_KEY = "wizard101-deck-builder-workspace";
 const LEGACY_DECK_KEY = "wizard101-deck-builder";
+const IMPORTED_CATALOG_KEY = "wizard101-deck-builder-imported-catalog";
+const WIZARDEO_API_URL = "https://supabase.wizardeo.eu/rest/v1/tools_deck_builder";
+const WIZARDEO_PUBLIC_KEY = "sb_publishable_FlxTasWm3Di7VJs26uWXK8_eR4QIM54";
 
-const spells = [
+const bundledSpells = [
   { id: "fire-cat", name: "Fire Cat", school: "Fire", rank: 1, type: "Damage", pipCost: 1, damage: 16, description: "Single-target Fire damage." },
   { id: "heckhound", name: "Heckhound", school: "Fire", rank: 3, type: "Damage", pipCost: 1, damage: 24, effects: ["damage-over-time"], description: "Damage over time; its total damage scales with the pips invested." },
   { id: "meteor-strike", name: "Meteor Strike", school: "Fire", rank: 4, type: "Damage", pipCost: 4, damage: 32, description: "Fire damage to all enemies." },
@@ -37,10 +40,30 @@ const spells = [
   { id: "shadow-sentinel", name: "Shadow Sentinel", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, damage: 0, description: "Shadow transformation focused on resistance and drawing enemy attacks, with a backlash drawback." },
   { id: "shadow-seraph", name: "Shadow Seraph", school: "Shadow", rank: 5, type: "Shadow", pipCost: 0, shadowPipCost: 1, damage: 0, description: "Shadow transformation focused on stronger healing, with a backlash drawback." }
 ];
+let importedSpells = [];
+let spells = [...bundledSpells];
+
+const DEFAULT_GEAR_PROFILE = { name: "", damagePercent: 0, piercePercent: 0, resistPercent: 0, accuracyPercent: 0 };
+const DEFAULT_COMBAT_PROFILE = {
+  baseDamage: 100,
+  baseAccuracy: 100,
+  targetHealth: 400,
+  targetResist: 0,
+  blade: 35,
+  trap: 30
+};
 
 let workspace = {
   activeDeckId: "default",
-  decks: [{ id: "default", name: "Questing deck", encounter: "", notes: "", spellIds: [] }]
+  decks: [{
+    id: "default",
+    name: "Questing deck",
+    encounter: "",
+    notes: "",
+    spellIds: [],
+    gearProfile: { ...DEFAULT_GEAR_PROFILE },
+    combatProfile: { ...DEFAULT_COMBAT_PROFILE }
+  }]
 };
 let deck = [];
 let simulatedHand = [];
@@ -70,6 +93,23 @@ const deckNameInput = document.querySelector("#deck-name");
 const deckEncounterInput = document.querySelector("#deck-encounter");
 const deckNotesInput = document.querySelector("#deck-notes");
 const workspaceStatus = document.querySelector("#workspace-status");
+const catalogStatus = document.querySelector("#catalog-status");
+const gearNameInput = document.querySelector("#gear-name");
+const gearInputs = {
+  damagePercent: document.querySelector("#gear-damage"),
+  piercePercent: document.querySelector("#gear-pierce"),
+  resistPercent: document.querySelector("#gear-resist"),
+  accuracyPercent: document.querySelector("#gear-accuracy")
+};
+const combatInputs = {
+  baseDamage: document.querySelector("#projection-base-damage"),
+  baseAccuracy: document.querySelector("#projection-base-accuracy"),
+  targetHealth: document.querySelector("#projection-target-health"),
+  targetResist: document.querySelector("#projection-target-resist"),
+  blade: document.querySelector("#projection-blade"),
+  trap: document.querySelector("#projection-trap")
+};
+const projectionResult = document.querySelector("#projection-result");
 const analysisSummary = document.querySelector("#analysis-summary");
 const analysisBreakdown = document.querySelector("#analysis-breakdown");
 const validationSummary = document.querySelector("#validation-summary");
@@ -90,7 +130,9 @@ function createDeckRecord(name, spellIds = []) {
     notes: "",
     spellIds,
     keySpellIds: [],
-    openingHandStats: { trials: 0, appearances: {} }
+    openingHandStats: { trials: 0, appearances: {} },
+    gearProfile: { ...DEFAULT_GEAR_PROFILE },
+    combatProfile: { ...DEFAULT_COMBAT_PROFILE }
   };
 }
 

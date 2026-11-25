@@ -53,6 +53,13 @@
           <button class="button button-secondary" id="share-deck" type="button">Share current deck</button>
           <input id="backup-file" type="file" accept="application/json,.json" hidden>
         </div>
+        <div class="backup-actions">
+          <button class="button button-secondary" id="import-wizardeo" type="button">Import Wizardeo catalog</button>
+          <button class="button button-secondary" id="export-catalog" type="button">Export catalog JSON</button>
+          <button class="button button-secondary" id="export-deck-json" type="button">Export build JSON</button>
+        </div>
+        <p class="workspace-status" id="catalog-status" role="status" aria-live="polite"></p>
+        <a class="external-tool-link" href="https://tools.wizardeo.eu/deck-builder/" target="_blank" rel="noopener noreferrer">Open Wizardeo Deck Builder</a>
         <p class="workspace-status" id="workspace-status" role="status" aria-live="polite"></p>
       </section>
 
@@ -69,6 +76,10 @@
           <option value="Death">Death</option>
           <option value="Balance">Balance</option>
           <option value="Shadow">Shadow</option>
+          <option value="Sun">Sun</option>
+          <option value="Moon">Moon</option>
+          <option value="Star">Star</option>
+          <option value="Astral">Astral</option>
         </select>
         <label for="type-filter">Spell type</label>
         <select id="type-filter">
@@ -78,6 +89,7 @@
           <option value="Defense">Defense</option>
           <option value="Utility">Utility</option>
           <option value="Shadow">Shadow forms</option>
+          <option value="Other">Other / imported</option>
         </select>
         <label for="rank-filter">Rank</label>
         <select id="rank-filter">
@@ -148,6 +160,77 @@
         <label for="deck-notes">Strategy notes</label>
         <textarea id="deck-notes" class="search-input notes-input" maxlength="500" placeholder="Record a strategy, sideboard plan, or cards to test."></textarea>
       </div>
+      <section class="deck-tool" aria-labelledby="optimizer-title">
+        <div class="tool-heading">
+          <div>
+            <p class="eyebrow">Local deck automation</p>
+            <h3 id="optimizer-title">Focused deck optimizer</h3>
+          </div>
+        </div>
+        <p class="simulator-note">Build a starter list from the local catalog using role coverage, school focus, and pip efficiency. Review suggestions before using them in-game.</p>
+        <div class="profile-fields">
+          <label for="optimization-goal">Encounter goal</label>
+          <select id="optimization-goal" class="search-input">
+            <option value="questing">Questing / solo</option>
+            <option value="aoe">PvE area damage</option>
+            <option value="boss">Boss hitter</option>
+            <option value="support">Team support</option>
+          </select>
+          <label for="optimization-school">School focus</label>
+          <select id="optimization-school" class="search-input">
+            <option value="Any">Any school</option>
+            <option value="Fire">Fire</option>
+            <option value="Ice">Ice</option>
+            <option value="Storm">Storm</option>
+            <option value="Myth">Myth</option>
+            <option value="Life">Life</option>
+            <option value="Death">Death</option>
+            <option value="Balance">Balance</option>
+            <option value="Sun">Sun</option>
+            <option value="Moon">Moon</option>
+            <option value="Star">Star</option>
+            <option value="Shadow">Shadow</option>
+            <option value="Astral">Astral</option>
+          </select>
+          <label for="optimization-size">Starter deck size</label>
+          <input id="optimization-size" class="search-input" type="number" min="1" max="64" value="7">
+        </div>
+        <button class="button button-primary" id="optimize-deck" type="button">Generate focused deck</button>
+      </section>
+      <section class="deck-tool" aria-labelledby="gear-title">
+        <div class="tool-heading">
+          <div>
+            <p class="eyebrow">Structured gear + stats</p>
+            <h3 id="gear-title">Gear profile &amp; damage projection</h3>
+          </div>
+        </div>
+        <p class="simulator-note">Enter your combined equipped-gear bonuses. Estimates use a simplified multiplier model; they are not an in-game damage guarantee.</p>
+        <div class="profile-fields">
+          <label for="gear-name">Gear set name</label>
+          <input id="gear-name" class="search-input" type="text" maxlength="48" placeholder="e.g. Storm questing set">
+          <label for="gear-damage">Damage bonus (%)</label>
+          <input id="gear-damage" class="search-input" type="number" min="0" max="500" value="0">
+          <label for="gear-pierce">Pierce (%)</label>
+          <input id="gear-pierce" class="search-input" type="number" min="0" max="100" value="0">
+          <label for="gear-resist">Resist (%)</label>
+          <input id="gear-resist" class="search-input" type="number" min="0" max="100" value="0">
+          <label for="gear-accuracy">Accuracy bonus (%)</label>
+          <input id="gear-accuracy" class="search-input" type="number" min="0" max="100" value="0">
+          <label for="projection-base-damage">Spell base damage</label>
+          <input id="projection-base-damage" class="search-input" type="number" min="1" value="100">
+          <label for="projection-base-accuracy">Spell base accuracy (%)</label>
+          <input id="projection-base-accuracy" class="search-input" type="number" min="0" max="100" value="100">
+          <label for="projection-target-health">Target health</label>
+          <input id="projection-target-health" class="search-input" type="number" min="1" value="400">
+          <label for="projection-target-resist">Target resist (%)</label>
+          <input id="projection-target-resist" class="search-input" type="number" min="0" max="100" value="0">
+          <label for="projection-blade">Blade boost (%)</label>
+          <input id="projection-blade" class="search-input" type="number" min="0" max="200" value="35">
+          <label for="projection-trap">Trap boost (%)</label>
+          <input id="projection-trap" class="search-input" type="number" min="0" max="200" value="30">
+        </div>
+        <div class="projection-result" id="projection-result" role="status" aria-live="polite"></div>
+      </section>
       <div class="deck-list" id="deck-list" aria-live="polite"></div>
       <p class="empty-state" id="empty-state">Your deck is empty. Add a spell from the catalog.</p>
       <section class="deck-tool deck-validation" aria-labelledby="validation-title">
