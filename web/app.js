@@ -842,7 +842,7 @@ function renderRecommendations() {
 
     const meta = document.createElement("span");
     meta.className = "recommendation-meta";
-    meta.textContent = `${spell.school} · Rank ${spell.rank} · ${formatSpellCost(spell)}`;
+    meta.textContent = `${spell.school} · ${spellRankLabel(spell)} · ${formatSpellCost(spell)}`;
 
     const reason = document.createElement("span");
     reason.textContent = getRecommendationReason(spell, role);
@@ -1020,6 +1020,12 @@ function formatSpellCost(spell) {
   return costs.length > 0 ? costs.join(" + ") : "0 pips";
 }
 
+function spellRankLabel(spell) {
+  if (Number.isFinite(spell.rank)) return `Rank ${spell.rank}`;
+  if (Number.isFinite(spell.level)) return `Level ${spell.level}`;
+  return "Rank not listed";
+}
+
 function formatSpellDamage(spell) {
   if (typeof spell.damage === "number" && spell.damage > 0) {
     return `${spell.damage} dmg`;
@@ -1052,14 +1058,19 @@ function renderCatalog() {
   const availableSpells = spells.filter((spell) =>
     (selectedSchool === "All Schools" || spell.school === selectedSchool) &&
     (selectedType === "All Types" || spell.type === selectedType) &&
-    (selectedRank === "all" || (selectedRank === "9" ? spell.rank >= 9 : spell.rank === Number(selectedRank))) &&
+    (selectedRank === "all" || (Number.isFinite(spell.rank)
+      && (selectedRank === "9" ? spell.rank >= 9 : spell.rank === Number(selectedRank)))) &&
     matchesPipFilter(spell, selectedPipCost) &&
-    `${spell.name} ${spell.school} ${spell.type} rank ${spell.rank} ${spell.description}`.toLowerCase().includes(searchTerm)
+    `${spell.name} ${spell.school} ${spell.type} ${spellRankLabel(spell)} ${spell.description}`.toLowerCase().includes(searchTerm)
   );
   if (sortFilter.value === "name") {
     availableSpells.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sortFilter.value === "rank") {
-    availableSpells.sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
+    availableSpells.sort((a, b) =>
+      (Number.isFinite(a.rank) ? a.rank : Number.POSITIVE_INFINITY)
+      - (Number.isFinite(b.rank) ? b.rank : Number.POSITIVE_INFINITY)
+      || a.name.localeCompare(b.name)
+    );
   } else if (sortFilter.value === "pips") {
     availableSpells.sort((a, b) => a.pipCost - b.pipCost || a.rank - b.rank || a.name.localeCompare(b.name));
   }
@@ -1073,7 +1084,7 @@ function renderCatalog() {
     card.className = "spell-card";
 
     const school = document.createElement("span");
-    school.className = `school-tag school-${spell.school.toLowerCase()}`;
+    school.className = `school-tag school-${spell.school.toLowerCase().replace(/[^a-z0-9-]/g, "")}`;
     school.textContent = spell.school;
 
     const name = document.createElement("h3");
@@ -1081,11 +1092,20 @@ function renderCatalog() {
 
     const metadata = document.createElement("p");
     metadata.className = "spell-meta";
-    metadata.textContent = `Rank ${spell.rank} · ${spell.type}${typeof spell.damage === "number" && spell.damage > 0 ? ` · ${formatSpellDamage(spell)}` : ""}`;
+    metadata.textContent = `${spellRankLabel(spell)} · ${spell.type}${typeof spell.damage === "number" && spell.damage > 0 ? ` · ${formatSpellDamage(spell)}` : ""}`;
 
     const description = document.createElement("p");
     description.className = "spell-description";
     description.textContent = spell.description;
+    if (spell.source === "Wizardeo" && spell.wikiUrl) {
+      const sourceLink = document.createElement("a");
+      sourceLink.className = "spell-source-link";
+      sourceLink.href = spell.wikiUrl;
+      sourceLink.target = "_blank";
+      sourceLink.rel = "noopener noreferrer";
+      sourceLink.textContent = "Wizard101 Central reference";
+      description.append(document.createElement("br"), sourceLink);
+    }
 
     const footer = document.createElement("div");
     footer.className = "spell-footer";
@@ -1129,7 +1149,7 @@ function renderDeck() {
     const name = document.createElement("h3");
     name.textContent = spell.name;
     const meta = document.createElement("p");
-    meta.textContent = `${spell.school} · Rank ${spell.rank} · ${formatSpellCost(spell)}${typeof spell.damage === "number" && spell.damage > 0 ? ` · ${formatSpellDamage(spell)}` : ""}`;
+    meta.textContent = `${spell.school} · ${spellRankLabel(spell)} · ${formatSpellCost(spell)}${typeof spell.damage === "number" && spell.damage > 0 ? ` · ${formatSpellDamage(spell)}` : ""}`;
     const keyLabel = document.createElement("label");
     keyLabel.className = "key-card-toggle";
     const keyToggle = document.createElement("input");
