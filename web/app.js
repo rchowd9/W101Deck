@@ -546,7 +546,8 @@ function mapWizardeoSpell(record) {
   const variablePipCost = record.is_x_pip === true;
   const damageEstimateAvailable = damageEffects.length > 0
     && !variablePipCost
-    && !damageEffects.some((effect) => effect.perPip === true);
+    && !damageEffects.some((effect) => effect.perPip === true
+      || !Number.isFinite(Number(effect.amount)) || Number(effect.amount) < 0);
   const damage = damageEstimateAvailable
     ? damageEffects.reduce((total, effect) => {
       const amount = Number(effect.amount);
@@ -1147,6 +1148,9 @@ function spellRankLabel(spell) {
 function formatSpellDamage(spell) {
   if (typeof spell.damage === "number" && spell.damage > 0) {
     return `${spell.damage} dmg`;
+  }
+  if (spell.type === "Damage" && spell.damageEstimateAvailable === false) {
+    return spell.variablePipCost ? "Damage scales with pips" : "Damage estimate unavailable";
   }
   if (spell.type === "Healing") {
     return "Heals";
