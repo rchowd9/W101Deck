@@ -883,6 +883,75 @@ function renderRecommendations() {
   }
 }
 
+function scoreSpellForGoal(spell, goal, school) {
+  const isDamage = spell.type === "Damage" || (typeof spell.damage === "number" && spell.damage > 0);
+  const isArea = spell.isArea === true || /\ball enemies\b|\ball opponents\b/i.test(spell.description);
+  const hasTrap = spellHasEffect(spell, "trap");
+  const hasHeal = spell.type === "Healing" || spellHasEffect(spell, "healing");
+  const hasDefense = spell.type === "Defense" || spellHasEffect(spell, "shield");
+  const hasUtility = spell.type === "Utility" || hasTrap
+    || spellHasEffect(spell, "weakness") || spellHasEffect(spell, "stun");
+  let score = school === "Any" || spell.school === school ? 3 : 0;
+  if (goal === "aoe") {
+    score += isArea && isDamage ? 7 : isDamage ? 2 : 0;
+    score += hasTrap ? 1 : 0;
+  } else if (goal === "boss") {
+    score += isDamage && !isArea ? 6 : isDamage ? 2 : 0;
+    score += hasTrap ? 2 : 0;
+  } else if (goal === "support") {
+    score += hasHeal ? 5 : 0;
+    score += hasDefense ? 4 : 0;
+    score += hasUtility ? 2 : 0;
+    score += isDamage ? 0.5 : 0;
+  } else {
+    score += isDamage ? 3 : 0;
+    score += hasHeal ? 2 : 0;
+    score += hasDefense ? 2 : 0;
+    score += hasUtility ? 1 : 0;
+    score += isArea && isDamage ? 1 : 0;
+  }
+  score -= Math.min(spell.pipCost, 12) * 0.2;
+  if (!spell.damageEstimateAvailable && spell.source === "Wizardeo" && isDamage) score -= 0.5;
+  return score;
+}
+
+document.querySelector("#optimize-deck").addEventListener("click", () => {
+  const requestedSize = document.querySelector("#optimization-size").valueAsNumber;
+  const goal = document.querySelector("#optimization-goal").value;
+  const school = document.querySelector("#optimization-school").value;
+  if (!Number.isInteger(requestedSize) || requestedSize < 1 || requestedSize > MAX_DECK_SIZE) {
+    setWorkspaceStatus(`Choose a starter deck size between 1 and ${MAX_DECK_SIZE}.`, true);
+    return;
+  }
+  const candidates = spells
+    .filter((spell) => spell.type !== "Other")
+    .map((spell) => ({ spell, score: scoreSpellForGoal(spell, goal, school) }))
+    .sort((first, second) => second.score - first.score
+      || first.spell.pipCost - second.spell.pipCost
+      || first.spell.name.localeCompare(second.spell.name));
+  const generated = candidates.slice(0, requestedSize).map(({ spell }) => spell);
+  if (generated.length === 0) {
+    setWorkspaceStatus("Import or add usable spell records before generating a deck.", true);
+    return;
+  }
+  if (deck.length > 0 && !window.confirm(
+    `Replace "${activeDeckRecord().name}" with ${generated.length} locally optimized starter cards?`
+  )) return;
+  deck = generated;
+  resetSimulator();
+  resetConsistencyStats();
+  render();
+  const goalLabels = {
+    questing: "questing / solo",
+    aoe: "PvE area damage",
+    boss: "boss hitter",
+    support: "team support"
+  };
+  setWorkspaceStatus(
+    `Generated ${generated.length} ${goalLabels[goal]} starter cards using local role, school, and pip-cost scoring.`
+  );
+});
+
 function openingHandProbability(copyCount) {
   const deckSize = deck.length;
   const handSize = Math.min(7, deckSize);
@@ -1347,6 +1416,35 @@ for (const [input, property] of [
       input.value = activeDeckRecord().name;
     }
   });
+}
+const gearLimits = {
+  damagePercent: [0, 500],
+  piercePercent: [0, 100],
+  resistPercent: [0, 100],
+  accuracyPercent: [0, 100]
+};
+const combatLimits = {
+  baseDamage: [1, 100000],
+  baseAccuracy: [0, 100],
+  targetHealth: [1, 100000000],
+  targetResist: [0, 100],
+  blade: [0, 200],
+  trap: [0, 200]
+};
+function saveProfilesFromInputs() {
+  const gearProfile = readGearProfile();
+  const combatProfile = readCombatProfile();
+  if (validateProfileInput(gearProfile, gearLimits) && validateProfileInput(combatProfile, combatLimits)) {
+    const record = activeDeckRecord();
+    record.gearProfile = gearProfile;
+    record.combatProfile = combatProfile;
+    saveDeck();
+  }
+  updateCombatProjection();
+}
+gearNameInput.addEventListener("input", saveProfilesFromInputs);
+for (const input of [...Object.values(gearInputs), ...Object.values(combatInputs)]) {
+  input.addEventListener("input", saveProfilesFromInputs);
 }
 const requestedSchool = new URLSearchParams(window.location.search).get("school");
 if ([...schoolFilter.options].some((option) => option.value === requestedSchool)) {
