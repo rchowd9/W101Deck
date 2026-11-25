@@ -463,6 +463,178 @@ function setWorkspaceStatus(message, isError = false) {
   workspaceStatus.classList.toggle("status-error", isError);
 }
 
+function setCatalogStatus(message, isError = false) {
+  catalogStatus.textContent = message;
+  catalogStatus.classList.toggle("status-error", isError);
+}
+
+function mapWizardeoSpell(record) {
+  const sourceId = Number(record?.id);
+  const name = typeof record?.en_us === "string" ? record.en_us.trim() : "";
+  const school = typeof record?.school_en === "string" ? record.school_en.trim() : "";
+  if (!Number.isSafeInteger(sourceId) || sourceId < 1 || !name || !school) return null;
+
+  const sourceEffects = Array.isArray(record.spell_effects) ? record.spell_effects : [];
+  const effects = new Set();
+  const damageEffects = [];
+  let isArea = false;
+  for (const effect of sourceEffects) {
+    if (!effect || typeof effect !== "object") continue;
+    const kind = String(effect.kind || "").toLowerCase();
+    const target = String(effect.target || "").toLowerCase();
+    if (kind.includes("damage")) damageEffects.push(effect);
+    if (kind.includes("damage_over_time")) effects.add("damage-over-time");
+    if (kind.includes("heal")) effects.add("healing");
+    if (kind.includes("shield") || kind.includes("ward")) effects.add("shield");
+    if (kind.includes("trap")) effects.add("trap");
+    if (kind.includes("weakness")) effects.add("weakness");
+    if (kind.includes("stun")) effects.add("stun");
+    if (kind.includes("cleanse")) effects.add("cleanse");
+    if (target.includes("all")) isArea = true;
+  }
+  if (isArea) effects.add("area");
+
+  const variablePipCost = record.is_x_pip === true;
+  const damageEstimateAvailable = damageEffects.length > 0
+    && !variablePipCost
+    && !damageEffects.some((effect) => effect.perPip === true);
+  const damage = damageEstimateAvailable
+    ? damageEffects.reduce((total, effect) => {
+      const amount = Number(effect.amount);
+      const count = Number(effect.count);
+      return total + (Number.isFinite(amount) && amount >= 0
+        ? amount * (Number.isFinite(count) && count > 0 ? count : 1)
+        : 0);
+    }, 0)
+    : null;
+  const typeName = String(record.spell_type || "").toLowerCase();
+  let type = "Other";
+  if (damageEffects.length > 0 || typeName.includes("damage")) type = "Damage";
+  else if (effects.has("healing") || typeName.includes("heal")) type = "Healing";
+  else if (effects.has("shield") || typeName.includes("shield") || typeName.includes("ward")) type = "Defense";
+  else if (typeName.includes("shadow")) type = "Shadow";
+  else if (sourceEffects.length > 0 || typeName) type = "Utility";
+
+  const level = Number.parseInt(record.level, 10);
+  const details = [];
+  if (Number.isFinite(level) && level >= 0) details.push(`Unlock level ${level}`);
+  if (record.description_en_us) details.push(String(record.description_en_us).slice(0, 300));
+  if (type === "Damage" && !damageEstimateAvailable) {
+    details.push("Damage depends on variable pips or scaling and is not included in the projection.");
+  }
+  const wikiUrl = typeof record.wiki === "string" ? record.wiki : "";
+  return normalizeImportedSpell({
+    sourceId,
+    name,
+    school,
+    level: Number.isFinite(level) ? level : null,
+    type,
+    pipCost: Number(record.pip_cost),
+    shadowPipCost: Number(record.shadow_pip_cost),
+    variablePipCost,
+    damage,
+    damageEstimateAvailable,
+    accuracy: Number(record.accuracy),
+    isArea,
+    effects: [...effects],
+    description: details.join(" · ") || "Imported from the Wizardeo card catalog.",
+    wikiUrl
+  });
+}
+
+async function fetchWizardeoCatalog() {
+  const fields = [
+    "id", "en_us", "school_en", "level", "spell_type", "accuracy", "pip_cost",
+    "shadow_pip_cost", "is_x_pip", "spell_effects", "description_en_us", "wiki"
+  ].join(",");
+  const pageSize = 250;
+  const maximumCards = 5000;
+  const records = [];
+  for (let offset = 0; offset < maximumCards; offset += pageSize) {
+    const query = new URLSearchParams({
+      select: fields,
+      order: "id.asc",
+      limit: String(pageSize),
+      offset: String(offset)
+    });
+    const response = await fetch(`${WIZARDEO_API_URL}?${query}`, {
+      headers: {
+        apikey: WIZARDEO_PUBLIC_KEY,
+        Authorization: `Bearer ${WIZARDEO_PUBLIC_KEY}`,
+        Accept: "application/json"
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Wizardeo catalog request failed (HTTP ${response.status}).`);
+    }
+    const page = await response.json();
+    if (!Array.isArray(page)) {
+      throw new Error("Wizardeo returned an unexpected catalog response.");
+    }
+    records.push(...page);
+    if (page.length < pageSize) return records;
+  }
+  throw new Error(`Wizardeo's catalog exceeded the ${maximumCards}-spell import limit.`);
+}
+
+function refreshSchoolOptions() {
+  const selectedSchool = schoolFilter.value;
+  const knownSchools = new Set([...schoolFilter.options].map((option) => option.value));
+  for (const school of [...new Set(spells.map((spell) => spell.school))].sort()) {
+    if (knownSchools.has(school)) continue;
+    const option = document.createElement("option");
+    option.value = school;
+    option.textContent = school;
+    schoolFilter.append(option);
+  }
+  schoolFilter.value = [...schoolFilter.options].some((option) => option.value === selectedSchool)
+    ? selectedSchool
+    : "All Schools";
+}
+
+function persistImportedCatalog(catalog) {
+  const normalized = catalog.map(normalizeImportedSpell).filter(Boolean);
+  localStorage.setItem(IMPORTED_CATALOG_KEY, JSON.stringify(normalized));
+  importedSpells = normalized;
+  spells = [...bundledSpells, ...importedSpells];
+  refreshSchoolOptions();
+}
+
+async function importWizardeoCatalog() {
+  const button = document.querySelector("#import-wizardeo");
+  button.disabled = true;
+  setCatalogStatus("Loading the public Wizardeo spell catalog...");
+  try {
+    const records = await fetchWizardeoCatalog();
+    const catalogById = new Map(importedSpells.map((spell) => [spell.id, spell]));
+    let skipped = 0;
+    for (const record of records) {
+      const spell = mapWizardeoSpell(record);
+      if (!spell) {
+        skipped += 1;
+        continue;
+      }
+      catalogById.set(spell.id, spell);
+    }
+    const catalog = [...catalogById.values()];
+    if (catalog.length === 0) {
+      throw new Error("Wizardeo returned no usable spell records.");
+    }
+    persistImportedCatalog(catalog);
+    render();
+    setCatalogStatus(
+      `Imported ${records.length - skipped} Wizardeo spell records; ${catalog.length} imported spells are available locally${skipped ? ` (${skipped} invalid records skipped)` : ""}.`
+    );
+  } catch (error) {
+    console.error("Could not import the Wizardeo catalog.", error);
+    setCatalogStatus(error instanceof TypeError
+      ? "Could not reach Wizardeo. Check your connection and try again."
+      : error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function resetSimulator() {
   simulatedHand = [];
   remainingCards = [];
