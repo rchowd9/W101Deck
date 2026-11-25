@@ -432,8 +432,26 @@ function saveDeck() {
   record.spellIds = deck.map((spell) => spell.id);
   record.keySpellIds = [...keySpellIds];
   record.openingHandStats = openingHandStats;
-  record.gearProfile = readGearProfile();
-  record.combatProfile = readCombatProfile();
+  const gearProfile = readGearProfile();
+  if (validateProfileInput(gearProfile, {
+    damagePercent: [0, 500],
+    piercePercent: [0, 100],
+    resistPercent: [0, 100],
+    accuracyPercent: [0, 100]
+  })) {
+    record.gearProfile = gearProfile;
+  }
+  const combatProfile = readCombatProfile();
+  if (validateProfileInput(combatProfile, {
+    baseDamage: [1, 100000],
+    baseAccuracy: [0, 100],
+    targetHealth: [1, 100000000],
+    targetResist: [0, 100],
+    blade: [0, 200],
+    trap: [0, 200]
+  })) {
+    record.combatProfile = combatProfile;
+  }
   try {
     localStorage.setItem(SAVED_DECK_KEY, JSON.stringify(workspace));
   } catch (error) {
@@ -1296,6 +1314,8 @@ document.querySelector("#duplicate-deck").addEventListener("click", () => {
   duplicate.encounter = current.encounter;
   duplicate.notes = current.notes;
   duplicate.keySpellIds = validKeySpellIds(current.keySpellIds);
+  duplicate.gearProfile = normalizeGearProfile(current.gearProfile);
+  duplicate.combatProfile = normalizeCombatProfile(current.combatProfile);
   workspace.decks.push(duplicate);
   workspace.activeDeckId = duplicate.id;
   loadActiveDeck();
