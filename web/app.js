@@ -345,6 +345,61 @@ function validateProfileInput(profile, limits) {
   );
 }
 
+function updateCombatProjection() {
+  const gear = readGearProfile();
+  const combat = readCombatProfile();
+  const gearLimits = {
+    damagePercent: [0, 500],
+    piercePercent: [0, 100],
+    resistPercent: [0, 100],
+    accuracyPercent: [0, 100]
+  };
+  const combatLimits = {
+    baseDamage: [1, 100000],
+    baseAccuracy: [0, 100],
+    targetHealth: [1, 100000000],
+    targetResist: [0, 100],
+    blade: [0, 200],
+    trap: [0, 200]
+  };
+  projectionResult.replaceChildren();
+  if (!validateProfileInput(gear, gearLimits) || !validateProfileInput(combat, combatLimits)) {
+    projectionResult.textContent = "Enter valid values within the displayed stat ranges to calculate projections.";
+    projectionResult.classList.add("status-error");
+    return;
+  }
+  projectionResult.classList.remove("status-error");
+
+  const effectiveResist = Math.max(0, combat.targetResist - gear.piercePercent);
+  const baseHit = combat.baseDamage * (1 + gear.damagePercent / 100) * (1 - effectiveResist / 100);
+  const combos = [
+    { name: "Hit only", setup: 0, damage: Math.floor(baseHit) },
+    { name: "Blade + hit", setup: 1, damage: Math.floor(baseHit * (1 + combat.blade / 100)) },
+    { name: "Trap + hit", setup: 1, damage: Math.floor(baseHit * (1 + combat.trap / 100)) },
+    {
+      name: "Blade + trap + hit",
+      setup: 2,
+      damage: Math.floor(baseHit * (1 + combat.blade / 100) * (1 + combat.trap / 100))
+    }
+  ];
+  const recommended = combos
+    .filter((combo) => combo.damage >= combat.targetHealth)
+    .sort((first, second) => first.setup - second.setup || first.damage - second.damage)[0];
+  const heading = document.createElement("strong");
+  heading.textContent = `${gear.name || "Current gear"} · ${Math.min(100, combat.baseAccuracy + gear.accuracyPercent).toFixed(0)}% estimated accuracy`;
+  projectionResult.append(heading);
+  const summary = document.createElement("span");
+  summary.textContent = recommended
+    ? `Most efficient for ${combat.targetHealth} health: ${recommended.name} (${recommended.damage} estimated damage).`
+    : `No listed combo reaches ${combat.targetHealth} health with these inputs.`;
+  projectionResult.append(summary);
+  for (const combo of combos) {
+    const row = document.createElement("span");
+    row.textContent = `${combo.name}: ${combo.damage} estimated damage`;
+    projectionResult.append(row);
+  }
+}
+
 function loadActiveDeck() {
   const record = activeDeckRecord();
   deck = [];
