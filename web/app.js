@@ -136,6 +136,105 @@ function createDeckRecord(name, spellIds = []) {
   };
 }
 
+function normalizeImportedSpell(record) {
+  if (!record || typeof record !== "object" || typeof record.name !== "string"
+      || typeof record.school !== "string" || !Number.isSafeInteger(record.sourceId)
+      || record.sourceId < 1) {
+    return null;
+  }
+  const name = record.name.trim().slice(0, 100);
+  const school = record.school.trim().slice(0, 32);
+  const allowedTypes = new Set(["Damage", "Healing", "Defense", "Utility", "Shadow", "Other"]);
+  const allowedEffects = new Set([
+    "damage-over-time", "trap", "shield", "healing", "weakness", "stun", "cleanse", "area"
+  ]);
+  if (!name || !school || !allowedTypes.has(record.type)) return null;
+  const wikiUrl = typeof record.wikiUrl === "string"
+      && /^https:\/\/wiki\.wizard101central\.com\/wiki\/Spell:/i.test(record.wikiUrl)
+    ? record.wikiUrl
+    : "";
+  const validNumber = (value, minimum, maximum) =>
+    Number.isFinite(value) && value >= minimum && value <= maximum ? value : null;
+  const effects = Array.isArray(record.effects)
+    ? [...new Set(record.effects.filter((effect) => allowedEffects.has(effect)))]
+    : [];
+  return {
+    id: `wizardeo-${record.sourceId}`,
+    sourceId: record.sourceId,
+    source: "Wizardeo",
+    name,
+    school,
+    rank: null,
+    level: validNumber(record.level, 0, 200),
+    type: record.type,
+    pipCost: validNumber(record.pipCost, 0, 20) ?? 0,
+    shadowPipCost: validNumber(record.shadowPipCost, 0, 10) ?? 0,
+    variablePipCost: record.variablePipCost === true,
+    damage: validNumber(record.damage, 0, 100000),
+    damageEstimateAvailable: record.damageEstimateAvailable === true,
+    accuracy: validNumber(record.accuracy, 0, 100),
+    isArea: record.isArea === true || effects.includes("area"),
+    effects,
+    description: typeof record.description === "string" ? record.description.slice(0, 1000) : "",
+    wikiUrl
+  };
+}
+
+function restoreImportedCatalog() {
+  try {
+    const saved = localStorage.getItem(IMPORTED_CATALOG_KEY);
+    if (saved === null) return;
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) {
+      throw new Error("The imported spell catalog is not a list.");
+    }
+    importedSpells = parsed.map(normalizeImportedSpell).filter(Boolean);
+    spells = [...bundledSpells, ...importedSpells];
+  } catch (error) {
+    console.error("Could not restore the imported Wizardeo catalog.", error);
+    catalogStatus.textContent = "The saved imported catalog could not be loaded.";
+    catalogStatus.classList.add("status-error");
+  }
+}
+
+function normalizeGearProfile(profile) {
+  const values = {};
+  for (const [key, maximum] of Object.entries({
+    damagePercent: 500,
+    piercePercent: 100,
+    resistPercent: 100,
+    accuracyPercent: 100
+  })) {
+    const value = Number(profile?.[key]);
+    values[key] = Number.isFinite(value) && value >= 0 && value <= maximum
+      ? value
+      : DEFAULT_GEAR_PROFILE[key];
+  }
+  return {
+    name: typeof profile?.name === "string" ? profile.name.slice(0, 48) : "",
+    ...values
+  };
+}
+
+function normalizeCombatProfile(profile) {
+  const limits = {
+    baseDamage: [1, 100000],
+    baseAccuracy: [0, 100],
+    targetHealth: [1, 100000000],
+    targetResist: [0, 100],
+    blade: [0, 200],
+    trap: [0, 200]
+  };
+  const normalized = {};
+  for (const [key, [minimum, maximum]] of Object.entries(limits)) {
+    const value = Number(profile?.[key]);
+    normalized[key] = Number.isFinite(value) && value >= minimum && value <= maximum
+      ? value
+      : DEFAULT_COMBAT_PROFILE[key];
+  }
+  return normalized;
+}
+
 function validKeySpellIds(ids) {
   return Array.isArray(ids)
     ? [...new Set(ids.filter((id) => typeof id === "string" && spells.some((spell) => spell.id === id)))]
@@ -189,7 +288,9 @@ function restoreWorkspace() {
         notes: typeof record.notes === "string" ? record.notes.slice(0, 500) : "",
         spellIds: record.spellIds.filter((id) => typeof id === "string"),
         keySpellIds: validKeySpellIds(record.keySpellIds),
-        openingHandStats: normalizeOpeningHandStats(record.openingHandStats)
+        openingHandStats: normalizeOpeningHandStats(record.openingHandStats),
+        gearProfile: normalizeGearProfile(record.gearProfile),
+        combatProfile: normalizeCombatProfile(record.combatProfile)
       }));
     if (restoredDecks.length === 0) {
       throw new Error("The saved workspace does not contain any valid decks.");
@@ -209,6 +310,41 @@ function activeDeckRecord() {
   return workspace.decks.find((record) => record.id === workspace.activeDeckId);
 }
 
+function setProfileInputs(record) {
+  const gear = normalizeGearProfile(record.gearProfile);
+  gearNameInput.value = gear.name;
+  for (const [key, input] of Object.entries(gearInputs)) {
+    input.value = String(gear[key]);
+  }
+  const combat = normalizeCombatProfile(record.combatProfile);
+  for (const [key, input] of Object.entries(combatInputs)) {
+    input.value = String(combat[key]);
+  }
+  updateCombatProjection();
+}
+
+function readGearProfile() {
+  return {
+    name: gearNameInput.value.trim().slice(0, 48),
+    damagePercent: gearInputs.damagePercent.valueAsNumber,
+    piercePercent: gearInputs.piercePercent.valueAsNumber,
+    resistPercent: gearInputs.resistPercent.valueAsNumber,
+    accuracyPercent: gearInputs.accuracyPercent.valueAsNumber
+  };
+}
+
+function readCombatProfile() {
+  return Object.fromEntries(
+    Object.entries(combatInputs).map(([key, input]) => [key, input.valueAsNumber])
+  );
+}
+
+function validateProfileInput(profile, limits) {
+  return Object.entries(limits).every(([key, [minimum, maximum]]) =>
+    Number.isFinite(profile[key]) && profile[key] >= minimum && profile[key] <= maximum
+  );
+}
+
 function loadActiveDeck() {
   const record = activeDeckRecord();
   deck = [];
@@ -218,6 +354,7 @@ function loadActiveDeck() {
   if (!record) return;
 
   openingHandStats = normalizeOpeningHandStats(record.openingHandStats);
+  setProfileInputs(record);
   for (const id of record.spellIds) {
     const spell = spells.find((candidate) => candidate.id === id);
     if (!spell) {
@@ -240,6 +377,8 @@ function saveDeck() {
   record.spellIds = deck.map((spell) => spell.id);
   record.keySpellIds = [...keySpellIds];
   record.openingHandStats = openingHandStats;
+  record.gearProfile = readGearProfile();
+  record.combatProfile = readCombatProfile();
   try {
     localStorage.setItem(SAVED_DECK_KEY, JSON.stringify(workspace));
   } catch (error) {
