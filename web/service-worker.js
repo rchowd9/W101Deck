@@ -1,4 +1,4 @@
-const CACHE_NAME = "wizard101-deck-builder-v6";
+const CACHE_NAME = "wizard101-deck-builder-v7";
 const APP_FILES = [
   "./",
   "./index.html",

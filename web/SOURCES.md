@@ -22,3 +22,22 @@ complete or authoritative spell database. Ranks are included as a planning aid;
 the Shadow entries describe broad transformation roles rather than exact
 mechanics, and variable pip costs are identified separately. Check current
 in-game details before relying on spell values.
+
+## Optional Wizardeo spell catalog import
+
+- **Publisher:** Wizardeo, community Wizard101 fansite
+- **URL:** <https://tools.wizardeo.eu/deck-builder/>
+- **Catalog endpoint:** Wizardeo's public, read-only `tools_deck_builder`
+  catalog, requested by the site itself for its deck builder
+- **Accessed:** November 25, 2026
+- **Used for:** The optional browser-side **Import Wizardeo catalog** action in
+  `app.js`
+
+The importer maps the English name, school, unlock level, spell type, pip
+costs, accuracy, effect metadata, description, and Wizard101 Central reference
+URL into this planner's local JSON records. Unlock level is shown as a level,
+not mislabeled as spell rank. X-pip or per-pip damage is omitted from numeric
+damage estimates. Imported records are stored in browser local storage and
+included in workspace JSON backups; no account credentials are collected.
+Wizardeo and its upstream catalog may change or become unavailable. Spell
+details and simplified combat estimates should be verified in-game.

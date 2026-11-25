@@ -37,6 +37,15 @@ transformations, plus a wider set of language-inspired examples such as Java,
 Python, TypeScript, C#, Go, and Rust to make the project feel more varied and
 interesting.
 
+The web edition can also manually import the public Wizardeo spell catalog,
+retain imported records in browser storage, and export spell catalogs, builds,
+gear bonuses, and combat inputs as JSON. Its focused-deck generator uses a
+local role/school/pip-cost scoring heuristic; damage projections are
+simplified estimates, not game-accurate guarantees. Imports and saved builds
+remain local to the browser. Wizardeo's public deck builder does not expose a
+documented deck-save/import API, so the app does not submit builds to a
+Wizardeo account or automate account actions.
+
 ## Run the JavaFX desktop app
 
 Install JDK 17 or newer and Maven, then run this from the repository root:

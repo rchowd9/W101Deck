@@ -1343,6 +1343,7 @@ function render() {
   renderSynergies();
   renderConsistencyMetrics();
   renderHand();
+  updateCombatProjection();
   saveDeck();
 }
 
@@ -1738,6 +1739,7 @@ mulliganButton.addEventListener("click", () => {
   renderHand();
 });
 
+restoreImportedCatalog();
 restoreWorkspace();
 restoreSharedDeckFromUrl();
 loadActiveDeck();
